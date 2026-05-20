@@ -93,7 +93,7 @@ function formatAbsLabel(v) {
 // │      origin in the MapTiler dashboard so nobody else can use it          │
 // └──────────────────────────────────────────────────────────────────────────┘
 const MAPTILER_KEY = "GDtVaHEGAQecKlRUiltm";
-const MAPTILER_STYLE = "bright-v2";   // try: basic-v2, dataviz, streets-v2, voyager
+const MAPTILER_STYLE = "dataviz";     // try: basic-v2, bright-v2, streets-v2, voyager
 const MAP_STYLE = MAPTILER_KEY === "PASTE_YOUR_MAPTILER_KEY_HERE"
   ? "https://tiles.openfreemap.org/styles/liberty"   // free fallback while no key set
   : `https://api.maptiler.com/maps/${MAPTILER_STYLE}/style.json?key=${MAPTILER_KEY}`;
