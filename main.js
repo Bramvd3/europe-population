@@ -92,14 +92,32 @@ function formatAbsLabel(v) {
 // │   4. (Optional but recommended) restrict the key to your GitHub Pages    │
 // │      origin in the MapTiler dashboard so nobody else can use it          │
 // └──────────────────────────────────────────────────────────────────────────┘
-const MAPTILER_KEY = "PASTE_YOUR_MAPTILER_KEY_HERE";
+const MAPTILER_KEY = "GDtVaHEGAQecKlRUiltm";
 const MAPTILER_STYLE = "bright-v2";   // try: basic-v2, dataviz, streets-v2, voyager
 const MAP_STYLE = MAPTILER_KEY === "PASTE_YOUR_MAPTILER_KEY_HERE"
   ? "https://tiles.openfreemap.org/styles/liberty"   // free fallback while no key set
   : `https://api.maptiler.com/maps/${MAPTILER_STYLE}/style.json?key=${MAPTILER_KEY}`;
-// In OpenFreeMap, country borders are a single layer (`boundary_2` = OSM
-// admin level 2). No separate "halo" sublayer to hide.
-const BASE_COUNTRY_BORDER_LAYER = "boundary_2";
+// The exact id of the basemap's country-border layer differs per provider
+// (OpenFreeMap uses `boundary_2`, MapTiler bright-v2 uses something like
+// `Boundary - Country`, CARTO uses `boundary_country_inner`, …). We pick
+// it up at runtime by scanning the loaded style.
+function findCountryBorderLayer() {
+  const layers = map.getStyle().layers;
+  // Heuristic: line layer whose id mentions country / admin-0 / boundary_2,
+  // skipping the disputed/halo/shadow variants.
+  const looksLikeBorder = (id) => {
+    const s = id.toLowerCase();
+    if (!/country|admin[-_]?0|boundary[-_]?2/.test(s)) return false;
+    if (/(disputed|halo|shadow|casing|maritime|coast)/.test(s)) return false;
+    return true;
+  };
+  const lineLayers = layers.filter(l => l.type === "line");
+  return (
+    lineLayers.find(l => looksLikeBorder(l.id))?.id ??
+    lineLayers.find(l => l.id.toLowerCase().includes("boundary"))?.id ??
+    null
+  );
+}
 
 async function init() {
   // Register the PMTiles protocol once, so MapLibre can fetch tile bytes via
@@ -124,10 +142,12 @@ async function init() {
   });
 
   map.on("load", () => {
-    // Darken the basemap's country border to dark grey, like CORRECTIV's.
-    if (map.getLayer(BASE_COUNTRY_BORDER_LAYER)) {
-      map.setPaintProperty(BASE_COUNTRY_BORDER_LAYER, "line-color", "#333");
-      map.setPaintProperty(BASE_COUNTRY_BORDER_LAYER, "line-width", 1.2);
+    // Find the basemap's country-border layer once, then reuse for both the
+    // dark-grey paint override and for the LAU layers' `beforeId`.
+    const borderLayerId = findCountryBorderLayer();
+    if (borderLayerId) {
+      map.setPaintProperty(borderLayerId, "line-color", "#333");
+      map.setPaintProperty(borderLayerId, "line-width", 1.2);
     }
 
     map.addSource("lau", {
@@ -140,12 +160,11 @@ async function init() {
       url: "pmtiles://data/lau.pmtiles",
       promoteId: "gisco_id",
     });
-    // The basemap's country-border layer exists in the loaded style; if it's
-    // present we pass its id as `beforeId` so MapLibre inserts our choropleth
-    // *under* it (so the borders stay crisply on top).
-    const beforeId = map.getLayer(BASE_COUNTRY_BORDER_LAYER)
-      ? BASE_COUNTRY_BORDER_LAYER
-      : undefined;
+    // If the basemap exposes a country-border layer we pass its id as
+    // `beforeId` so MapLibre inserts our choropleth *under* it (so the borders
+    // stay crisply on top). If no such layer was found (very minimal style)
+    // beforeId stays undefined and our layers go on top.
+    const beforeId = borderLayerId ?? undefined;
 
     map.addLayer({
       id: "lau-fill",
