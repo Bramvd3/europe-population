@@ -55,8 +55,8 @@ const THREE_BIG = ["BE_11002", "BE_44021", "BE_21004"];
 // multiPopup: array of gisco_ids → draws a row of mini line charts (one per
 //   id) in the chart panel, with a vertical marker at year 2001 (the "knik").
 const STEPS = [
-  // 0 — Intro, Ireland to Poland in frame
-  { yearA: 1961, yearB: 2024, center: [9, 52],     zoom: 4.4, highlight: [],            popup: null, dim: "off",         countryHighlight: null },
+  // 0 — Intro, Ireland barely on the left, Poland barely on the right
+  { yearA: 1961, yearB: 2024, center: [6, 51],     zoom: 4.8, highlight: [],            popup: null, dim: "off",         countryHighlight: null },
   // 1 — BE cities decline
   { yearA: 1961, yearB: 2001, center: [4.6, 50.7],  zoom: 7.2, highlight: BIG_CITIES,    popup: null, dim: "belgium",     countryHighlight: null },
   // 2 — Brussels-centred banlieue
@@ -69,8 +69,9 @@ const STEPS = [
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7],  zoom: 7.2, highlight: BIG_CITIES,    popup: null, dim: "belgium",     countryHighlight: null },
   // 6 — Knik in 3 curves (Antwerpen, Gent, Brussel) shown in side-by-side mini charts
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7],  zoom: 7.2, highlight: THREE_BIG,     popup: null, dim: "belgium",     countryHighlight: null, multiPopup: THREE_BIG },
-  // 7 — Belgian Lux + Grand Duchy outlined, dim relaxed to keep LU visible
-  { yearA: 2001, yearB: 2024, center: [5.85, 49.83],zoom: 8.5, highlight: BE_LUX,        popup: null, dim: "belgium-lux", countryHighlight: "LUX" },
+  // 7 — Belgian Lux + Grand Duchy: LU stays dimmed but gets a thick country
+  //     outline so its shape is unambiguous. Focus stays on the Belgian side.
+  { yearA: 2001, yearB: 2024, center: [5.85, 49.83],zoom: 8.5, highlight: BE_LUX,        popup: null, dim: "belgium",     countryHighlight: "LUX" },
   // 8 — Belgium overview, almost all light green
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7],  zoom: 7.5, highlight: [],            popup: null, dim: "belgium",     countryHighlight: null },
   // 9 — Zoom out, neighbours visible, dim off so we can compare
@@ -244,7 +245,7 @@ async function init() {
       filter: ["!=", ["slice", ["get", "gisco_id"], 0, 3], "ZZ_"],   // placeholder, replaced per step
       paint: {
         "fill-color": "#ffffff",
-        "fill-opacity": 0.55,
+        "fill-opacity": 0.78,
       },
       layout: { visibility: "none" },
     }, beforeId);
