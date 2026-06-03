@@ -179,6 +179,9 @@ async function init() {
     minZoom: 2,
     maxZoom: 12,
     attributionControl: { compact: true },
+    // TEMP for the Oostende-render diagnostic — lets readPixels return real
+    // canvas contents instead of zeros. Slight perf hit; remove after fix.
+    preserveDrawingBuffer: true,
   });
   window.__debugMap = map;   // TEMPORARY — for diagnosing the Oostende bug
 
