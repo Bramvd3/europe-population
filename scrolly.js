@@ -22,114 +22,63 @@ const NO_DATA_COLOR = "rgba(0,0,0,0)";
 // drive the choropleth period; center/zoom drive the camera fly; highlight
 // is an array of LAU gisco_ids that get a thick dark outline; popup (if set)
 // auto-opens the D3 chart for that single LAU.
+// Hand-picked focus regions reused across steps.
+const BIG_CITIES = ["BE_44021", "BE_11002", "BE_21004", "BE_62063", "BE_52011"];
+const LLN_AREA  = [
+  "BE_25121","BE_25018","BE_25068","BE_25112","BE_25023",
+  "BE_25091","BE_25119","BE_25124","BE_25031",
+];
+const KEMPEN_LIMBURG = [
+  "BE_13031","BE_13046","BE_13019","BE_13017","BE_13004","BE_13023",
+  "BE_13010","BE_13029","BE_13049","BE_13035",
+  "BE_71067","BE_72039","BE_72042","BE_72020","BE_71011","BE_71070",
+  "BE_71057","BE_71066","BE_72043","BE_72038",
+];
+const WESTHOEK = [
+  "BE_32030","BE_33041","BE_33016","BE_33039","BE_33021",
+  "BE_33029","BE_37012","BE_32003","BE_32006","BE_32011",
+];
+const BE_LUX = [
+  "BE_84033","BE_82036","BE_81013","BE_81003","BE_82005",
+  "BE_82009","BE_85039","BE_84043","BE_84077","BE_83055",
+];
+const THREE_BIG = ["BE_11002", "BE_44021", "BE_21004"];
+
+// dim: how to dim the non-focused regions.
+//   "off"           — no overlay; full choropleth visible everywhere
+//   "belgium"       — translucent white over everything except BE
+//   "belgium-lux"   — translucent white over everything except BE + LU
+//
+// countryHighlight: ISO-3 country code to outline thickly (uses Protomaps'
+//   built-in country boundary layer). null = no country outline.
+//
+// multiPopup: array of gisco_ids → draws a row of mini line charts (one per
+//   id) in the chart panel, with a vertical marker at year 2001 (the "knik").
 const STEPS = [
-  // 0 — Intro (Europe overview, no highlight)
-  {
-    yearA: 1961, yearB: 2024,
-    center: [10, 51], zoom: 3.4,
-    highlight: [],
-    popup: null,
-  },
-  // 1 — 1961→2001, BE big cities all red
-  {
-    yearA: 1961, yearB: 2001,
-    center: [4.6, 50.7], zoom: 7.2,
-    highlight: ["BE_44021", "BE_11002", "BE_21004", "BE_62063", "BE_52011"],
-    popup: null,
-  },
-  // 2 — Louvain-la-Neuve area
-  {
-    yearA: 1961, yearB: 2001,
-    center: [4.62, 50.65], zoom: 9.2,
-    highlight: [
-      "BE_25121",  // Ottignies-Louvain-la-Neuve
-      "BE_25018",  // Chaumont-Gistoux
-      "BE_25068",  // Mont-Saint-Guibert
-      "BE_25112",  // Wavre
-      "BE_25023",  // Court-Saint-Etienne
-      "BE_25091",  // Rixensart
-      "BE_25119",  // Lasne
-      "BE_25124",  // Walhain
-      "BE_25031",  // Genappe
-    ],
-    popup: null,
-  },
-  // 3 — Kempen + Limburg (growth corridors)
-  {
-    yearA: 1961, yearB: 2001,
-    center: [5.15, 51.20], zoom: 8.4,
-    highlight: [
-      // Kempen (arr. Turnhout)
-      "BE_13031","BE_13046","BE_13019","BE_13017","BE_13004","BE_13023",
-      "BE_13010","BE_13029","BE_13049","BE_13035",
-      // Limburg
-      "BE_71067","BE_72039","BE_72042","BE_72020","BE_71011","BE_71070",
-      "BE_71057","BE_71066","BE_72043","BE_72038",
-    ],
-    popup: null,
-  },
-  // 4 — Westhoek (decline)
-  {
-    yearA: 1961, yearB: 2001,
-    center: [2.85, 50.90], zoom: 9.5,
-    highlight: [
-      "BE_32030","BE_33041","BE_33016","BE_33039","BE_33021",
-      "BE_33029","BE_37012","BE_32003","BE_32006","BE_32011",
-    ],
-    popup: null,
-  },
-  // 5 — Switch to 2001→2024, BE cities all turn green
-  {
-    yearA: 2001, yearB: 2024,
-    center: [4.6, 50.7], zoom: 7.2,
-    highlight: ["BE_44021", "BE_11002", "BE_21004", "BE_62063", "BE_52011"],
-    popup: null,
-  },
-  // 6 — Zoom on Antwerpen + auto-open D3 chart to show the "knik" at 2001
-  {
-    yearA: 2001, yearB: 2024,
-    center: [4.41, 51.22], zoom: 10.5,
-    highlight: ["BE_11002"],
-    popup: "BE_11002",
-  },
-  // 7 — Belgian Luxembourg, Grand Duchy effect
-  {
-    yearA: 2001, yearB: 2024,
-    center: [5.55, 49.85], zoom: 9.3,
-    highlight: [
-      "BE_84033","BE_82036","BE_81013","BE_81003","BE_82005",
-      "BE_82009","BE_85039","BE_84043","BE_84077","BE_83055",
-    ],
-    popup: null,
-  },
-  // 8 — Whole Belgium, mostly light green, no specific highlight
-  {
-    yearA: 2001, yearB: 2024,
-    center: [4.6, 50.7], zoom: 7.5,
-    highlight: [],
-    popup: null,
-  },
-  // 9 — Zoom out to neighbours (FR, DE visible)
-  {
-    yearA: 2001, yearB: 2024,
-    center: [6, 49.5], zoom: 5.8,
-    highlight: [],
-    popup: null,
-  },
+  // 0 — Intro, Ireland to Poland in frame
+  { yearA: 1961, yearB: 2024, center: [9, 52],     zoom: 4.4, highlight: [],            popup: null, dim: "off",         countryHighlight: null },
+  // 1 — BE cities decline
+  { yearA: 1961, yearB: 2001, center: [4.6, 50.7],  zoom: 7.2, highlight: BIG_CITIES,    popup: null, dim: "belgium",     countryHighlight: null },
+  // 2 — Brussels-centred banlieue
+  { yearA: 1961, yearB: 2001, center: [4.40, 50.85],zoom: 9.0, highlight: LLN_AREA,      popup: null, dim: "belgium",     countryHighlight: null },
+  // 3 — Kempen + Limburg
+  { yearA: 1961, yearB: 2001, center: [5.15, 51.20],zoom: 8.4, highlight: KEMPEN_LIMBURG,popup: null, dim: "belgium",     countryHighlight: null },
+  // 4 — Westhoek
+  { yearA: 1961, yearB: 2001, center: [2.85, 50.90],zoom: 9.5, highlight: WESTHOEK,      popup: null, dim: "belgium",     countryHighlight: null },
+  // 5 — Switch to 2001→2024, cities return
+  { yearA: 2001, yearB: 2024, center: [4.6, 50.7],  zoom: 7.2, highlight: BIG_CITIES,    popup: null, dim: "belgium",     countryHighlight: null },
+  // 6 — Knik in 3 curves (Antwerpen, Gent, Brussel) shown in side-by-side mini charts
+  { yearA: 2001, yearB: 2024, center: [4.6, 50.7],  zoom: 7.2, highlight: THREE_BIG,     popup: null, dim: "belgium",     countryHighlight: null, multiPopup: THREE_BIG },
+  // 7 — Belgian Lux + Grand Duchy outlined, dim relaxed to keep LU visible
+  { yearA: 2001, yearB: 2024, center: [5.85, 49.83],zoom: 8.5, highlight: BE_LUX,        popup: null, dim: "belgium-lux", countryHighlight: "LUX" },
+  // 8 — Belgium overview, almost all light green
+  { yearA: 2001, yearB: 2024, center: [4.6, 50.7],  zoom: 7.5, highlight: [],            popup: null, dim: "belgium",     countryHighlight: null },
+  // 9 — Zoom out, neighbours visible, dim off so we can compare
+  { yearA: 2001, yearB: 2024, center: [6, 49.5],    zoom: 5.8, highlight: [],            popup: null, dim: "off",         countryHighlight: null },
   // 10 — Iberia
-  {
-    yearA: 2001, yearB: 2024,
-    center: [-3.8, 40.5], zoom: 5.4,
-    highlight: [],
-    popup: null,
-  },
+  { yearA: 2001, yearB: 2024, center: [-3.8, 40.5], zoom: 5.4, highlight: [],            popup: null, dim: "off",         countryHighlight: null },
   // 11 — Baltic states
-  {
-    yearA: 2001, yearB: 2024,
-    center: [25, 56.5], zoom: 5.3,
-    highlight: [],
-    popup: null,
-  },
+  { yearA: 2001, yearB: 2024, center: [25, 56.5],   zoom: 5.3, highlight: [],            popup: null, dim: "off",         countryHighlight: null },
 ];
 
 // ---- Helpers (mirrors of main.js) ---------------------------------------
@@ -283,6 +232,23 @@ async function init() {
       },
     }, beforeId);
 
+    // Dim overlay — translucent white over non-focused countries. The filter
+    // is rewritten per step (setDimMode). Layer is inserted ABOVE the choropleth
+    // (lau-outline) so it visually mutes those LAUs, but BELOW the highlight
+    // line so highlighted gemeenten still pop crisply on top.
+    map.addLayer({
+      id: "lau-dim",
+      type: "fill",
+      source: "lau",
+      "source-layer": "lau",
+      filter: ["!=", ["slice", ["get", "gisco_id"], 0, 3], "ZZ_"],   // placeholder, replaced per step
+      paint: {
+        "fill-color": "#ffffff",
+        "fill-opacity": 0.55,
+      },
+      layout: { visibility: "none" },
+    }, beforeId);
+
     // Highlight layer — thick dark outline for feature-state.highlighted.
     map.addLayer({
       id: "lau-highlight",
@@ -301,6 +267,25 @@ async function init() {
           0,
         ],
       },
+    }, beforeId);
+
+    // Country highlight — uses Protomaps' built-in `boundaries` source-layer
+    // (already loaded as part of the basemap). Filter is rewritten per step
+    // to point at a single ISO-3 country code (e.g. "LUX").
+    map.addLayer({
+      id: "country-highlight",
+      type: "line",
+      source: "protomaps",
+      "source-layer": "boundaries",
+      filter: ["all",
+        ["<=", ["get", "kind_detail"], 2],
+        ["==", ["get", "brk_a3"], "ZZZ"],          // placeholder
+      ],
+      paint: {
+        "line-color": "#1c1c1c",
+        "line-width": 3,
+      },
+      layout: { visibility: "none" },
     }, beforeId);
 
     // First refreshBins after LAU source has actually loaded (avoids the
@@ -338,6 +323,42 @@ function refreshBins() {
       { bin: b }
     );
   }
+}
+
+// ---- Dim + country-highlight management -------------------------------
+function setDimMode(mode) {
+  const layer = "lau-dim";
+  if (mode === "off") {
+    map.setLayoutProperty(layer, "visibility", "none");
+    return;
+  }
+  let filter;
+  if (mode === "belgium") {
+    filter = ["!=", ["slice", ["get", "gisco_id"], 0, 3], "BE_"];
+  } else if (mode === "belgium-lux") {
+    filter = ["all",
+      ["!=", ["slice", ["get", "gisco_id"], 0, 3], "BE_"],
+      ["!=", ["slice", ["get", "gisco_id"], 0, 3], "LU_"],
+    ];
+  } else {
+    return;
+  }
+  map.setFilter(layer, filter);
+  map.setLayoutProperty(layer, "visibility", "visible");
+}
+
+function setCountryHighlight(brk_a3) {
+  const layer = "country-highlight";
+  if (!brk_a3) {
+    map.setLayoutProperty(layer, "visibility", "none");
+    return;
+  }
+  map.setFilter(layer, [
+    "all",
+    ["<=", ["get", "kind_detail"], 2],
+    ["==", ["get", "brk_a3"], brk_a3],
+  ]);
+  map.setLayoutProperty(layer, "visibility", "visible");
 }
 
 // ---- Highlight management ---------------------------------------------
@@ -488,7 +509,112 @@ function showPopup(giscoId) {
 }
 
 function hidePopup() {
-  document.getElementById("chart-panel").style.display = "none";
+  const panel = document.getElementById("chart-panel");
+  panel.style.display = "none";
+  panel.classList.remove("multi");
+}
+
+// Three (or more) mini line charts side by side. Each chart shows the full
+// 1961–2024 series for that LAU with a dashed vertical marker at year 2001
+// (the "knik") and a red dot at the 2001 datapoint to draw the eye.
+function showMultiPopup(giscoIds) {
+  const panel = document.getElementById("chart-panel");
+  panel.classList.add("multi");
+
+  const names = giscoIds
+    .map(id => regionData.names[dataByLocation.get(id)]?.split(" / ")[0])
+    .filter(Boolean);
+  document.getElementById("info-sentence").innerHTML =
+    `<strong>${names.join(", ")}</strong>: drie steden, één patroon. ` +
+    `De daling tot rond 2000, dan een duidelijke knik omhoog.`;
+
+  d3.select("#popup_chart").selectAll("*").remove();
+  const row = d3.select("#popup_chart")
+    .append("div")
+    .style("display", "flex")
+    .style("gap", "10px");
+
+  for (const id of giscoIds) {
+    const idx = dataByLocation.get(id);
+    if (idx == null) continue;
+    const name = (regionData.names[idx] || id).split(" / ")[0];
+    const series = ALL_YEARS
+      .map(y => ({ year: y, pop: regionData.pops[String(y)][idx] }))
+      .filter(d => d.pop != null);
+
+    const cell = row.append("div").style("flex", "1").style("min-width", "0");
+    cell.append("div")
+      .style("font-size", "11px")
+      .style("font-weight", "600")
+      .style("margin-bottom", "2px")
+      .text(name);
+
+    const W = 150, H = 86;
+    const m = { top: 4, right: 6, bottom: 14, left: 6 };
+    const iw = W - m.left - m.right;
+    const ih = H - m.top - m.bottom;
+
+    const svg = cell.append("svg")
+      .attr("viewBox", `0 0 ${W} ${H}`)
+      .attr("width", "100%")
+      .style("display", "block");
+    const g = svg.append("g").attr("transform", `translate(${m.left},${m.top})`);
+
+    const x = d3.scaleLinear().domain(d3.extent(series, d => d.year)).range([0, iw]);
+    const y = d3.scaleLinear().domain(d3.extent(series, d => d.pop)).nice().range([ih, 0]);
+
+    // Dashed marker at 2001 — the year where the trend bends
+    g.append("line")
+      .attr("x1", x(2001)).attr("x2", x(2001))
+      .attr("y1", 0).attr("y2", ih)
+      .attr("stroke", "#bbb")
+      .attr("stroke-width", 1)
+      .attr("stroke-dasharray", "2,2");
+
+    const line = d3.line()
+      .x(d => x(d.year))
+      .y(d => y(d.pop))
+      .curve(d3.curveMonotoneX);
+    g.append("path")
+      .datum(series)
+      .attr("fill", "none")
+      .attr("stroke", "#222")
+      .attr("stroke-width", 1.5)
+      .attr("d", line);
+
+    g.selectAll("circle.dot")
+      .data(series)
+      .join("circle")
+      .attr("class", "dot")
+      .attr("cx", d => x(d.year))
+      .attr("cy", d => y(d.pop))
+      .attr("r", 1.6)
+      .attr("fill", "#222");
+
+    // Red dot on the 2001 datapoint — the inflection
+    const p2001 = series.find(s => s.year === 2001);
+    if (p2001) {
+      g.append("circle")
+        .attr("cx", x(2001))
+        .attr("cy", y(p2001.pop))
+        .attr("r", 3)
+        .attr("fill", "#d46780")
+        .attr("stroke", "#fff")
+        .attr("stroke-width", 1);
+    }
+
+    g.append("text")
+      .attr("x", 0).attr("y", ih + 10)
+      .attr("font-size", 9).attr("fill", "#666")
+      .text("1961");
+    g.append("text")
+      .attr("x", iw).attr("y", ih + 10)
+      .attr("text-anchor", "end")
+      .attr("font-size", 9).attr("fill", "#666")
+      .text("2024");
+  }
+
+  panel.style.display = "block";
 }
 
 // ---- Legend (D3) -------------------------------------------------------
@@ -540,9 +666,16 @@ function applyStep(step) {
   });
 
   setHighlight(step.highlight || []);
+  setDimMode(step.dim || "off");
+  setCountryHighlight(step.countryHighlight || null);
 
-  if (step.popup) showPopup(step.popup);
-  else hidePopup();
+  if (step.multiPopup) {
+    showMultiPopup(step.multiPopup);
+  } else if (step.popup) {
+    showPopup(step.popup);
+  } else {
+    hidePopup();
+  }
 }
 
 // ---- Scrollama wiring --------------------------------------------------

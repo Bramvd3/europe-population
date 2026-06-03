@@ -133,7 +133,10 @@ html, body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
   font-size: 13px;
   line-height: 1.5;
+  transition: width 0.4s ease;
 }
+/* Wider when we're showing three mini-charts side-by-side */
+#chart-panel.multi { width: 520px; }
 #chart-panel .info-sentence {
   margin: 0 0 8px 0;
 }
