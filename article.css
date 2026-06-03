@@ -12,22 +12,22 @@
   font-family: "Roobert";
   font-weight: 400;
   font-display: swap;
-  src: url("https://interactief.vrtnws.be/webfont/Roobert-Regular.woff2") format("woff2"),
-       url("https://interactief.vrtnws.be/webfont/Roobert-Regular.woff") format("woff");
+  src: url("assets/fonts/Roobert-Regular.woff2") format("woff2"),
+       url("assets/fonts/Roobert-Regular.woff") format("woff");
 }
 @font-face {
   font-family: "Roobert";
   font-weight: 500;
   font-display: swap;
-  src: url("https://interactief.vrtnws.be/webfont/Roobert-Medium.woff2") format("woff2"),
-       url("https://interactief.vrtnws.be/webfont/Roobert-Medium.woff") format("woff");
+  src: url("assets/fonts/Roobert-Medium.woff2") format("woff2"),
+       url("assets/fonts/Roobert-Medium.woff") format("woff");
 }
 @font-face {
   font-family: "Roobert";
   font-weight: 600;
   font-display: swap;
-  src: url("https://interactief.vrtnws.be/webfont/Roobert-SemiBold.woff2") format("woff2"),
-       url("https://interactief.vrtnws.be/webfont/Roobert-SemiBold.woff") format("woff");
+  src: url("assets/fonts/Roobert-SemiBold.woff2") format("woff2"),
+       url("assets/fonts/Roobert-SemiBold.woff") format("woff");
 }
 
 :root {
@@ -293,21 +293,6 @@ a:hover {
   line-height: 1.5;
 }
 .interactive__caption strong { color: var(--ink); }
-
-/* ============================================================
-   ARTICLE FOOTER
-   ============================================================ */
-.article-foot {
-  max-width: var(--max-prose);
-  margin: 56px auto 0;
-  padding: 24px;
-  border-top: 1px solid var(--rule);
-  font-size: 14px;
-  color: var(--ink-soft);
-}
-.article-foot p { margin: 0; line-height: 1.7; }
-.article-foot em { font-style: italic; color: var(--ink); font-weight: 500; }
-.article-foot a { color: var(--vrt-accent); }
 
 /* ============================================================
    VRT NWS CREDIT FOOTER (45° purple gradient, white text)
