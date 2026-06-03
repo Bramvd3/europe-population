@@ -1,10 +1,16 @@
 /* ============================================================
-   Scrollytelling controller.
+   Scrollytelling controller — Option C edition.
 
-   Reuses the same Protomaps basemap, lau.pmtiles + data.json as the
-   interactive embed. Each step in STEPS defines a period (yearA→yearB),
-   camera (center+zoom), optional set of LAU gisco_ids to highlight, and
-   optional gisco_id to auto-open the popup for.
+   Compared to the interactive embed (which uses lau.pmtiles + data.json),
+   this scrolly uses lau-scrolly.pmtiles. That PMTiles has every LAU's full
+   1961–2024 population series baked in as feature properties, so we can:
+     * compute the choropleth's bin entirely in the paint expression
+       (no JS-side feature-state, no refreshBins iterating 107k LAUs)
+     * read the popup chart's data straight off feature.properties
+     * skip the 17 MB data.json fetch altogether — no loading overlay
+   The price is a heavier PMTiles file (93 MB vs 44), but the browser only
+   fetches the byte-ranges for tiles currently in view, so the actual data
+   over the wire is smaller than the data.json+lau.pmtiles combo.
    ============================================================ */
 
 const ALL_YEARS = [1961, 1971, 1981, 1991, 2001, 2011, 2021, 2024];
@@ -19,10 +25,13 @@ const NO_DATA_COLOR = "rgba(0,0,0,0)";
 
 // ---- Story steps ---------------------------------------------------------
 // Each entry corresponds to a .step in scrolly.html (by index). yearA/yearB
-// drive the choropleth period; center/zoom drive the camera fly; highlight
-// is an array of LAU gisco_ids that get a thick dark outline; popup (if set)
-// auto-opens the D3 chart for that single LAU.
-// Hand-picked focus regions reused across steps.
+// drive the choropleth period; center/zoom drive the camera; highlight is an
+// array of gisco_ids that get a thick dark outline; multiPopup is an array of
+// gisco_ids → row of mini line charts with a marker at year 2001.
+//
+// dim mode:    "off" | "belgium" | "belgium-lux"
+// countryHighlight: ISO-3 country code (e.g. "LUX") to thickly outline
+// transition:  "fly" (default) | "jump" for instant cross-continent cuts
 const BIG_CITIES = ["BE_44021", "BE_11002", "BE_21004", "BE_62063", "BE_52011"];
 const LLN_AREA  = [
   "BE_25121","BE_25018","BE_25068","BE_25112","BE_25023",
@@ -44,79 +53,25 @@ const BE_LUX = [
 ];
 const THREE_BIG = ["BE_11002", "BE_44021", "BE_21004"];
 
-// dim: how to dim the non-focused regions.
-//   "off"           — no overlay; full choropleth visible everywhere
-//   "belgium"       — translucent white over everything except BE
-//   "belgium-lux"   — translucent white over everything except BE + LU
-//
-// countryHighlight: ISO-3 country code to outline thickly (uses Protomaps'
-//   built-in country boundary layer). null = no country outline.
-//
-// multiPopup: array of gisco_ids → draws a row of mini line charts (one per
-//   id) in the chart panel, with a vertical marker at year 2001 (the "knik").
 const STEPS = [
-  // 0 — Intro, tight West-European frame (NL/BE/FR/UK + western DE)
   { yearA: 1961, yearB: 2024, center: [5, 51],     zoom: 5.5, highlight: [],            popup: null, dim: "off",         countryHighlight: null },
-  // 1 — BE cities decline
   { yearA: 1961, yearB: 2001, center: [4.6, 50.7],  zoom: 7.2, highlight: BIG_CITIES,    popup: null, dim: "belgium",     countryHighlight: null },
-  // 2 — Brussels-centred banlieue
   { yearA: 1961, yearB: 2001, center: [4.40, 50.85],zoom: 9.0, highlight: LLN_AREA,      popup: null, dim: "belgium",     countryHighlight: null },
-  // 3 — Kempen + Limburg
   { yearA: 1961, yearB: 2001, center: [5.15, 51.20],zoom: 8.4, highlight: KEMPEN_LIMBURG,popup: null, dim: "belgium",     countryHighlight: null },
-  // 4 — Westhoek
   { yearA: 1961, yearB: 2001, center: [2.85, 50.90],zoom: 9.5, highlight: WESTHOEK,      popup: null, dim: "belgium",     countryHighlight: null },
-  // 5 — Switch to 2001→2024, cities return
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7],  zoom: 7.2, highlight: BIG_CITIES,    popup: null, dim: "belgium",     countryHighlight: null },
-  // 6 — Knik in 3 curves (Antwerpen, Gent, Brussel) shown in side-by-side mini charts
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7],  zoom: 7.2, highlight: THREE_BIG,     popup: null, dim: "belgium",     countryHighlight: null, multiPopup: THREE_BIG },
-  // 7 — Belgian Lux + Grand Duchy: LU stays dimmed but gets a thick country
-  //     outline so its shape is unambiguous. Focus stays on the Belgian side.
   { yearA: 2001, yearB: 2024, center: [5.85, 49.83],zoom: 8.5, highlight: BE_LUX,        popup: null, dim: "belgium",     countryHighlight: "LUX" },
-  // 8 — Belgium overview, almost all light green
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7],  zoom: 7.5, highlight: [],            popup: null, dim: "belgium",     countryHighlight: null },
-  // 9 — Zoom out, neighbours visible, dim off so we can compare
   { yearA: 2001, yearB: 2024, center: [6, 49.5],    zoom: 5.8, highlight: [],            popup: null, dim: "off",         countryHighlight: null },
-  // 10 — Iberia (cross-continent jump — no fly arc, instant cut like CORRECTIV)
   { yearA: 2001, yearB: 2024, center: [-3.8, 40.5], zoom: 5.4, highlight: [],            popup: null, dim: "off",         countryHighlight: null, transition: "jump" },
-  // 11 — Baltic (another cross-continent jump)
   { yearA: 2001, yearB: 2024, center: [25, 56.5],   zoom: 5.3, highlight: [],            popup: null, dim: "off",         countryHighlight: null, transition: "jump" },
 ];
 
-// ---- Helpers (mirrors of main.js) ---------------------------------------
-function binIndex(value, bins) {
-  if (value == null || !isFinite(value)) return null;
-  for (let i = 0; i < bins.length; i++) {
-    if (value < bins[i]) return i;
-  }
-  return bins.length;
-}
-
-let regionData;          // {locations, names, pops, …}
-let dataByLocation;      // gisco_id → array index
+// ---- State --------------------------------------------------------------
 let currentYearA = STEPS[0].yearA;
 let currentYearB = STEPS[0].yearB;
 let map;
-
-function effectiveYear(idx, requested, direction) {
-  const v = regionData.pops[String(requested)][idx];
-  if (v != null) return [requested, v];
-  const range = direction < 0
-    ? ALL_YEARS.filter(y => y < requested).reverse()
-    : ALL_YEARS.filter(y => y > requested);
-  for (const y of range) {
-    const val = regionData.pops[String(y)][idx];
-    if (val != null) return [y, val];
-  }
-  return [requested, null];
-}
-
-function computeDelta(idx) {
-  const [eya, pa] = effectiveYear(idx, currentYearA, +1);
-  const [eyb, pb] = effectiveYear(idx, currentYearB, -1);
-  if (pa == null || pb == null || eya >= eyb) return null;
-  if (pa === 0) return null;
-  return (pb - pa) / pa * 100;
-}
 
 // ---- Map style (copied from main.js) -----------------------------------
 const PROTOMAPS_KEY = "d3b78e1318dd7bcb";
@@ -156,51 +111,49 @@ function findCountryBorderLayer() {
   );
 }
 
-// ---- Preload overlay ----------------------------------------------------
-function showPreloadOverlay() {
-  const div = document.createElement("div");
-  div.className = "preload-overlay";
-  div.innerHTML = `
-    <div class="preload-card">
-      <h2>Even geduld…</h2>
-      <p>De kaart wordt geladen.</p>
-      <div class="preload-progress">
-        <div class="preload-progress-fill"></div>
-      </div>
-      <p class="preload-count">0 / ${STEPS.length}</p>
-    </div>
-  `;
-  document.body.appendChild(div);
-  return {
-    el: div,
-    setProgress(done, total) {
-      div.querySelector(".preload-progress-fill").style.width =
-        (done / total * 100) + "%";
-      div.querySelector(".preload-count").textContent = `${done} / ${total}`;
-    },
-    hide() {
-      div.classList.add("fade-out");
-      setTimeout(() => div.remove(), 600);
-    },
-  };
-}
-
-// Wait until the map has no in-flight tile requests. Resolves immediately
-// if everything is already loaded.
-function waitForIdle() {
-  if (map.areTilesLoaded()) return Promise.resolve();
-  return new Promise((r) => map.once("idle", r));
+// ---- The fill expression ------------------------------------------------
+// Pure paint-expression bin computation: takes pop_yearA / pop_yearB straight
+// from feature properties, computes pct, then steps through PCT_BINS to pick
+// a colour. setPaintProperty('lau-fill', 'fill-color', buildFillExpr(...))
+// is the only thing we need to do when the period changes — no JS loop over
+// 107k features, no feature-state.
+function buildFillExpr(yearA, yearB) {
+  const kA = "pop_" + yearA;
+  const kB = "pop_" + yearB;
+  const pctExpr = [
+    "*",
+    100,
+    ["/", ["-", ["get", kB], ["get", kA]], ["get", kA]],
+  ];
+  return [
+    "case",
+    // Missing-data fall-through → transparent (basemap shows through)
+    ["any",
+      ["==", ["get", kA], null],
+      ["==", ["get", kB], null],
+      ["==", ["get", kA], 0],
+    ], NO_DATA_COLOR,
+    // step(pct, COLORS[0], -8, COLORS[1], -6, COLORS[2], …)
+    [
+      "step", pctExpr,
+      COLORS[0],
+      PCT_BINS[0], COLORS[1],
+      PCT_BINS[1], COLORS[2],
+      PCT_BINS[2], COLORS[3],
+      PCT_BINS[3], COLORS[4],
+      PCT_BINS[4], COLORS[5],
+      PCT_BINS[5], COLORS[6],
+      PCT_BINS[6], COLORS[7],
+      PCT_BINS[7], COLORS[8],
+      PCT_BINS[8], COLORS[9],
+    ],
+  ];
 }
 
 // ---- Init ---------------------------------------------------------------
 async function init() {
-  const overlay = showPreloadOverlay();
-
   const protocol = new pmtiles.Protocol();
   maplibregl.addProtocol("pmtiles", protocol.tile);
-
-  regionData = await fetch("data/data.json").then(r => r.json());
-  dataByLocation = new Map(regionData.locations.map((loc, i) => [loc, i]));
 
   buildPeriodTicks();
 
@@ -211,12 +164,11 @@ async function init() {
     zoom: STEPS[0].zoom,
     minZoom: 2,
     maxZoom: 12,
-    interactive: false,                // story-driven, no user pan/zoom
+    interactive: false,
     attributionControl: { compact: true },
   });
 
   map.on("load", () => {
-    // Border + water + country-label tweaks (same as main.js)
     const borderLayerId = findCountryBorderLayer();
     if (borderLayerId) {
       map.setPaintProperty(borderLayerId, "line-color", "#333");
@@ -230,11 +182,10 @@ async function init() {
       map.setPaintProperty("places_country", "text-color", "#5c5c5c");
     }
 
-    // LAU source — numeric feature.id from the rebuilt PMTiles (see
-    // rebuild_lau_pmtiles.py).
+    // Scrolly-specific LAU source — properties include pop_1961…pop_2024.
     map.addSource("lau", {
       type: "vector",
-      url: "pmtiles://data/lau.pmtiles",
+      url: "pmtiles://data/lau-scrolly.pmtiles",
     });
     const beforeId = borderLayerId ?? undefined;
 
@@ -244,14 +195,7 @@ async function init() {
       source: "lau",
       "source-layer": "lau",
       paint: {
-        "fill-color": [
-          "case",
-          ["==", ["feature-state", "bin"], null], NO_DATA_COLOR,
-          ["match", ["feature-state", "bin"],
-            0, COLORS[0], 1, COLORS[1], 2, COLORS[2], 3, COLORS[3], 4, COLORS[4],
-            5, COLORS[5], 6, COLORS[6], 7, COLORS[7], 8, COLORS[8], 9, COLORS[9],
-            NO_DATA_COLOR],
-        ],
+        "fill-color": buildFillExpr(currentYearA, currentYearB),
         "fill-opacity": 0.85,
         "fill-outline-color": "rgba(255,255,255,0)",
       },
@@ -271,16 +215,13 @@ async function init() {
       },
     }, beforeId);
 
-    // Dim overlay — translucent white over non-focused countries. The filter
-    // is rewritten per step (setDimMode). Layer is inserted ABOVE the choropleth
-    // (lau-outline) so it visually mutes those LAUs, but BELOW the highlight
-    // line so highlighted gemeenten still pop crisply on top.
+    // Dim overlay — translucent white over non-focused countries.
     map.addLayer({
       id: "lau-dim",
       type: "fill",
       source: "lau",
       "source-layer": "lau",
-      filter: ["!=", ["slice", ["get", "gisco_id"], 0, 3], "ZZ_"],   // placeholder, replaced per step
+      filter: ["!=", ["slice", ["get", "gisco_id"], 0, 3], "ZZ_"],
       paint: {
         "fill-color": "#ffffff",
         "fill-opacity": 0.78,
@@ -288,29 +229,25 @@ async function init() {
       layout: { visibility: "none" },
     }, beforeId);
 
-    // Highlight layer — thick dark outline for feature-state.highlighted.
+    // Highlight layer — filter-based. setHighlight() updates the filter to
+    // contain the focus gisco_ids; no feature-state needed.
     map.addLayer({
       id: "lau-highlight",
       type: "line",
       source: "lau",
       "source-layer": "lau",
+      filter: ["in", ["get", "gisco_id"], ["literal", []]],
       paint: {
         "line-color": "#1c1c1c",
         "line-width": [
           "interpolate", ["linear"], ["zoom"],
           5, 1.2, 8, 2.0, 11, 2.5,
         ],
-        "line-opacity": [
-          "case",
-          ["boolean", ["feature-state", "highlighted"], false], 1,
-          0,
-        ],
       },
     }, beforeId);
 
-    // Country highlight — uses Protomaps' built-in `boundaries` source-layer
-    // (already loaded as part of the basemap). Filter is rewritten per step
-    // to point at a single ISO-3 country code (e.g. "LUX").
+    // Country highlight — Protomaps' boundaries source-layer filtered to a
+    // single ISO-3 code (e.g. "LUX").
     map.addLayer({
       id: "country-highlight",
       type: "line",
@@ -318,7 +255,7 @@ async function init() {
       "source-layer": "boundaries",
       filter: ["all",
         ["<=", ["get", "kind_detail"], 2],
-        ["==", ["get", "brk_a3"], "ZZZ"],          // placeholder
+        ["==", ["get", "brk_a3"], "ZZZ"],
       ],
       paint: {
         "line-color": "#1c1c1c",
@@ -327,70 +264,15 @@ async function init() {
       layout: { visibility: "none" },
     }, beforeId);
 
-    // First refreshBins after LAU source has actually loaded (avoids the
-    // first-paint feature-state race; same logic as the main embed). Once
-    // bins are set we trigger the per-step tile preload, then unveil the
-    // story.
-    function onceLauLoaded(e) {
-      if (e.sourceId !== "lau" || !map.isSourceLoaded("lau")) return;
-      map.off("sourcedata", onceLauLoaded);
-      refreshBins();
-      map.triggerRepaint();
-      preloadAllStepsThenStart();
-    }
-    if (map.isSourceLoaded("lau")) {
-      refreshBins();
-      map.triggerRepaint();
-      preloadAllStepsThenStart();
-    } else {
-      map.on("sourcedata", onceLauLoaded);
-    }
-
     drawLegend();
-  });
+    updatePeriodPill();
 
-  // Walk through every step's camera position once, waiting for tiles to
-  // finish loading at each. After this completes both the Protomaps basemap
-  // tiles AND the LAU PMTiles byte-ranges are in the browser HTTP cache, so
-  // the actual scrolly flyTo's no longer have to fetch them — pans and
-  // zooms run smoothly without the white-tile flicker.
-  async function preloadAllStepsThenStart() {
-    try {
-      // Make sure the initial render finished before we start jumping
-      await waitForIdle();
-
-      for (let i = 0; i < STEPS.length; i++) {
-        const step = STEPS[i];
-        map.jumpTo({ center: step.center, zoom: step.zoom });
-        await waitForIdle();
-        overlay.setProgress(i + 1, STEPS.length);
-      }
-
-      // Cleanly reset to step 0 so the very first flyTo has nothing to do
-      applyStep(STEPS[0]);
-      await waitForIdle();
-    } catch (e) {
-      // If preload fails for any reason, fall back to just rendering step 0
-      console.warn("Preload error, continuing without:", e);
-      applyStep(STEPS[0]);
-    }
-
-    overlay.hide();
+    // No preload overlay. The map shows step 0 immediately; tiles for later
+    // steps stream in as the user scrolls. The slow flyTo speed (0.5) gives
+    // MapLibre time to keep up.
+    applyStep(STEPS[0]);
     setupScrollama();
-  }
-}
-
-// ---- Bin refresh -------------------------------------------------------
-function refreshBins() {
-  const locations = regionData.locations;
-  for (let i = 0; i < locations.length; i++) {
-    const d = computeDelta(i);
-    const b = binIndex(d, PCT_BINS);
-    map.setFeatureState(
-      { source: "lau", sourceLayer: "lau", id: i },
-      { bin: b }
-    );
-  }
+  });
 }
 
 // ---- Dim + country-highlight management -------------------------------
@@ -429,32 +311,15 @@ function setCountryHighlight(brk_a3) {
   map.setLayoutProperty(layer, "visibility", "visible");
 }
 
-// ---- Highlight management ---------------------------------------------
-const highlightedIdxs = new Set();
+// ---- Highlight management (now filter-based, not feature-state) ------
 function setHighlight(giscoIds) {
-  // Clear previous
-  for (const idx of highlightedIdxs) {
-    map.setFeatureState(
-      { source: "lau", sourceLayer: "lau", id: idx },
-      { highlighted: false }
-    );
-  }
-  highlightedIdxs.clear();
-  // Set new
-  for (const giscoId of giscoIds) {
-    const idx = dataByLocation.get(giscoId);
-    if (idx == null) continue;
-    map.setFeatureState(
-      { source: "lau", sourceLayer: "lau", id: idx },
-      { highlighted: true }
-    );
-    highlightedIdxs.add(idx);
-  }
+  map.setFilter("lau-highlight", [
+    "in", ["get", "gisco_id"], ["literal", giscoIds || []],
+  ]);
 }
 
 // ---- Period pill (top-center) ------------------------------------------
 function buildPeriodTicks() {
-  // Place a small tick mark for each of the 8 census years.
   const ticks = document.getElementById("period-ticks");
   ALL_YEARS.forEach((y, i) => {
     const pct = (i / (ALL_YEARS.length - 1)) * 100;
@@ -467,7 +332,6 @@ function buildPeriodTicks() {
 }
 
 function updatePeriodPill() {
-  // Translate yearA/yearB to positions in the [0, 100] track.
   const idxA = ALL_YEARS.indexOf(currentYearA);
   const idxB = ALL_YEARS.indexOf(currentYearB);
   const pctA = (idxA / (ALL_YEARS.length - 1)) * 100;
@@ -479,101 +343,15 @@ function updatePeriodPill() {
   document.querySelector("#period-pill .year-b").textContent = currentYearB;
 }
 
-// ---- Popup (same as the main embed, simplified) -----------------------
-function showPopup(giscoId) {
-  const idx = dataByLocation.get(giscoId);
-  if (idx == null) { hidePopup(); return; }
-
-  const name = regionData.names[idx] || giscoId;
-  const panel = document.getElementById("chart-panel");
-
-  const [eya, pa] = effectiveYear(idx, currentYearA, +1);
-  const [eyb, pb] = effectiveYear(idx, currentYearB, -1);
-
-  let sentence;
-  if (pa == null || pb == null || eya >= eyb) {
-    sentence = `<strong>${name}</strong>: geen vergelijkbare data voor deze periode.`;
-  } else {
-    const delta = (pb - pa) / pa * 100;
-    const direction = delta >= 0 ? "groeide" : "kromp";
-    sentence = `In <strong>${name}</strong> ${direction} de bevolking met ` +
-               `<strong>${Math.abs(delta).toFixed(1)}%</strong> tussen ${eya} en ${eyb}.`;
-  }
-  document.getElementById("info-sentence").innerHTML = sentence;
-
-  // Line chart of the full 1961–2024 series for this LAU
-  const series = ALL_YEARS
-    .map(y => ({ year: y, pop: regionData.pops[String(y)][idx] }))
-    .filter(d => d.pop != null);
-
-  const W = 280, H = 130;
-  const margin = { top: 6, right: 8, bottom: 18, left: 8 };
-  const innerW = W - margin.left - margin.right;
-  const innerH = H - margin.top - margin.bottom;
-
-  d3.select("#popup_chart").selectAll("*").remove();
-  const svg = d3.select("#popup_chart")
-    .append("svg")
-    .attr("viewBox", `0 0 ${W} ${H}`)
-    .attr("width", "100%");
-
-  const g = svg.append("g")
-    .attr("transform", `translate(${margin.left},${margin.top})`);
-
-  const x = d3.scaleLinear()
-    .domain(d3.extent(series, d => d.year))
-    .range([0, innerW]);
-  const y = d3.scaleLinear()
-    .domain(d3.extent(series, d => d.pop)).nice()
-    .range([innerH, 0]);
-
-  const line = d3.line()
-    .x(d => x(d.year))
-    .y(d => y(d.pop))
-    .curve(d3.curveMonotoneX);
-
-  g.append("path")
-    .datum(series)
-    .attr("fill", "none")
-    .attr("stroke", "#222")
-    .attr("stroke-width", 1.5)
-    .attr("d", line);
-
-  g.selectAll("circle")
-    .data(series)
-    .join("circle")
-    .attr("cx", d => x(d.year))
-    .attr("cy", d => y(d.pop))
-    .attr("r", 2)
-    .attr("fill", "#222");
-
-  // X axis with year labels (every other to avoid crowding)
-  g.selectAll(".x-label")
-    .data(ALL_YEARS.filter((_, i) => i % 2 === 0))
-    .join("text")
-    .attr("class", "x-label")
-    .attr("x", d => x(d))
-    .attr("y", innerH + 14)
-    .attr("text-anchor", "middle")
-    .attr("font-size", 10)
-    .attr("fill", "#666")
-    .text(d => d);
-
-  // Mark the period endpoints
-  g.selectAll(".endpoint")
-    .data([[currentYearA, "A"], [currentYearB, "B"]])
-    .join("circle")
-    .attr("cx", d => x(d[0]))
-    .attr("cy", d => {
-      const p = series.find(s => s.year === d[0]);
-      return p ? y(p.pop) : innerH;
-    })
-    .attr("r", 3.5)
-    .attr("fill", "#1c1c1c")
-    .attr("stroke", "#fff")
-    .attr("stroke-width", 1.5);
-
-  panel.style.display = "block";
+// ---- Popup (queries feature properties — no data.json) -----------------
+// Look up the population series for a gisco_id by querying the LAU source.
+// Returns null if the feature isn't in any loaded tile yet.
+function getLauProperties(giscoId) {
+  const features = map.querySourceFeatures("lau", {
+    sourceLayer: "lau",
+    filter: ["==", ["get", "gisco_id"], giscoId],
+  });
+  return features[0]?.properties || null;
 }
 
 function hidePopup() {
@@ -582,18 +360,27 @@ function hidePopup() {
   panel.classList.remove("multi");
 }
 
-// Three (or more) mini line charts side by side. Each chart shows the full
-// 1961–2024 series for that LAU with a dashed vertical marker at year 2001
-// (the "knik") and a red dot at the 2001 datapoint to draw the eye.
 function showMultiPopup(giscoIds) {
   const panel = document.getElementById("chart-panel");
   panel.classList.add("multi");
 
-  const names = giscoIds
-    .map(id => regionData.names[dataByLocation.get(id)]?.split(" / ")[0])
+  // Resolve the LAU props for every requested city. If a tile isn't loaded
+  // yet we just skip that one (rare; we always fly first, then call this).
+  const cities = giscoIds
+    .map(id => {
+      const p = getLauProperties(id);
+      if (!p) return null;
+      const name = (p.name || id).split(" / ")[0];
+      const series = ALL_YEARS
+        .map(y => ({ year: y, pop: p["pop_" + y] }))
+        .filter(d => d.pop != null && d.pop !== 0);
+      return series.length ? { name, series } : null;
+    })
     .filter(Boolean);
+
+  const cityNames = cities.map(c => c.name).join(", ");
   document.getElementById("info-sentence").innerHTML =
-    `<strong>${names.join(", ")}</strong>: drie steden, één patroon. ` +
+    `<strong>${cityNames}</strong>: drie steden, één patroon. ` +
     `De daling tot rond 2000, dan een duidelijke knik omhoog.`;
 
   d3.select("#popup_chart").selectAll("*").remove();
@@ -602,14 +389,7 @@ function showMultiPopup(giscoIds) {
     .style("display", "flex")
     .style("gap", "10px");
 
-  for (const id of giscoIds) {
-    const idx = dataByLocation.get(id);
-    if (idx == null) continue;
-    const name = (regionData.names[idx] || id).split(" / ")[0];
-    const series = ALL_YEARS
-      .map(y => ({ year: y, pop: regionData.pops[String(y)][idx] }))
-      .filter(d => d.pop != null);
-
+  for (const { name, series } of cities) {
     const cell = row.append("div").style("flex", "1").style("min-width", "0");
     cell.append("div")
       .style("font-size", "11px")
@@ -617,7 +397,6 @@ function showMultiPopup(giscoIds) {
       .style("margin-bottom", "2px")
       .text(name);
 
-    // Reserve enough height for the labels above + below the curve
     const W = 160, H = 110;
     const m = { top: 16, right: 8, bottom: 18, left: 8 };
     const iw = W - m.left - m.right;
@@ -633,10 +412,6 @@ function showMultiPopup(giscoIds) {
       .domain(d3.extent(series, d => d.year))
       .range([0, iw]);
 
-    // Padded y-domain so the dip doesn't visually hit the bottom of the
-    // chart (otherwise it reads as "population went to zero"). 40% headroom
-    // below the minimum + 15% above the maximum keeps the curve visibly
-    // dynamic without misleading the eye.
     const minPop = d3.min(series, d => d.pop);
     const maxPop = d3.max(series, d => d.pop);
     const span = Math.max(maxPop - minPop, 1);
@@ -644,7 +419,6 @@ function showMultiPopup(giscoIds) {
       .domain([minPop - span * 0.4, maxPop + span * 0.15])
       .range([ih, 0]);
 
-    // Dashed marker at 2001 — the year where the trend bends
     g.append("line")
       .attr("x1", x(2001)).attr("x2", x(2001))
       .attr("y1", 0).attr("y2", ih)
@@ -672,7 +446,6 @@ function showMultiPopup(giscoIds) {
       .attr("r", 1.6)
       .attr("fill", "#222");
 
-    // Value labels at 1961, 2001 (the dip), 2024
     const p1961 = series.find(s => s.year === 1961);
     const p2001 = series.find(s => s.year === 2001);
     const p2024 = series.find(s => s.year === 2024);
@@ -691,7 +464,6 @@ function showMultiPopup(giscoIds) {
         .attr("font-size", 9).attr("fill", "#555")
         .text(fmt(p2024.pop));
     }
-    // The inflection point — red dot + value label in red, anchored below.
     if (p2001) {
       g.append("circle")
         .attr("cx", x(2001))
@@ -738,7 +510,6 @@ function drawLegend() {
     .attr("width", swatchW)
     .attr("height", H)
     .attr("fill", d => d);
-  // Labels for the bin boundaries
   svg.selectAll("text")
     .data(PCT_BINS)
     .join("text")
@@ -756,26 +527,19 @@ function applyStep(step) {
   if (periodChanged) {
     currentYearA = step.yearA;
     currentYearB = step.yearB;
-    refreshBins();
+    // Single paint-property update re-evaluates the fill for every visible
+    // LAU. No more refreshBins() iterating all 107k features.
+    map.setPaintProperty("lau-fill", "fill-color", buildFillExpr(currentYearA, currentYearB));
     updatePeriodPill();
   }
 
   if (step.transition === "jump") {
-    // Instant cut — used for cross-continent transitions where a fly arc
-    // would take 8+ seconds and require streaming way more intermediate
-    // tiles than we preloaded. CORRECTIV does the same for their
-    // Greece → Germany → Lithuania jumps.
     map.jumpTo({ center: step.center, zoom: step.zoom });
   } else {
-    // Speed-driven fly: MapLibre computes the duration from distance, so
-    // big moves get more time to render (and small moves stay snappy).
-    // Default speed is 1.2; 0.5 is roughly 2.5x slower → way more frames
-    // for MapLibre to actually paint, which is what makes CORRECTIV's
-    // flys look so smooth despite using the same MapLibre engine.
     map.flyTo({
       center: step.center,
       zoom: step.zoom,
-      essential: true,        // play even with prefers-reduced-motion
+      essential: true,
       speed: 0.5,
       curve: 1.42,
     });
@@ -786,9 +550,9 @@ function applyStep(step) {
   setCountryHighlight(step.countryHighlight || null);
 
   if (step.multiPopup) {
-    showMultiPopup(step.multiPopup);
-  } else if (step.popup) {
-    showPopup(step.popup);
+    // Defer the popup a frame so the just-issued flyTo has a chance to start
+    // loading the new tiles → properties available when we query.
+    setTimeout(() => showMultiPopup(step.multiPopup), 200);
   } else {
     hidePopup();
   }
@@ -800,7 +564,7 @@ function setupScrollama() {
   scroller
     .setup({
       step: "#story .step",
-      offset: 0.55,           // trigger when card crosses 55% of viewport
+      offset: 0.55,
       debug: false,
     })
     .onStepEnter(({ index }) => {
