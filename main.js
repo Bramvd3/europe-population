@@ -203,6 +203,14 @@ async function init() {
       map.setPaintProperty("water", "fill-color", "#dbe9f4");
     }
 
+    // Darken country labels. Protomaps' "white" flavor sets `places_country`
+    // text colour to #b8b8b8 — barely readable against the near-white land.
+    // We bump them to the same dark grey (#5c5c5c) the theme uses for
+    // city labels (`places_locality`), so countries are as easy to read.
+    if (map.getLayer("places_country")) {
+      map.setPaintProperty("places_country", "text-color", "#5c5c5c");
+    }
+
     map.addSource("lau", {
       type: "vector",
       // pmtiles:// protocol intercepted by the library registered above;
