@@ -76,10 +76,10 @@ const STEPS = [
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7],  zoom: 7.5, highlight: [],            popup: null, dim: "belgium",     countryHighlight: null },
   // 9 — Zoom out, neighbours visible, dim off so we can compare
   { yearA: 2001, yearB: 2024, center: [6, 49.5],    zoom: 5.8, highlight: [],            popup: null, dim: "off",         countryHighlight: null },
-  // 10 — Iberia
-  { yearA: 2001, yearB: 2024, center: [-3.8, 40.5], zoom: 5.4, highlight: [],            popup: null, dim: "off",         countryHighlight: null },
-  // 11 — Baltic states
-  { yearA: 2001, yearB: 2024, center: [25, 56.5],   zoom: 5.3, highlight: [],            popup: null, dim: "off",         countryHighlight: null },
+  // 10 — Iberia (cross-continent jump — no fly arc, instant cut like CORRECTIV)
+  { yearA: 2001, yearB: 2024, center: [-3.8, 40.5], zoom: 5.4, highlight: [],            popup: null, dim: "off",         countryHighlight: null, transition: "jump" },
+  // 11 — Baltic (another cross-continent jump)
+  { yearA: 2001, yearB: 2024, center: [25, 56.5],   zoom: 5.3, highlight: [],            popup: null, dim: "off",         countryHighlight: null, transition: "jump" },
 ];
 
 // ---- Helpers (mirrors of main.js) ---------------------------------------
@@ -760,14 +760,26 @@ function applyStep(step) {
     updatePeriodPill();
   }
 
-  map.flyTo({
-    center: step.center,
-    zoom: step.zoom,
-    essential: true,        // play even with prefers-reduced-motion
-    duration: 1800,
-    speed: 0.9,
-    curve: 1.3,
-  });
+  if (step.transition === "jump") {
+    // Instant cut — used for cross-continent transitions where a fly arc
+    // would take 8+ seconds and require streaming way more intermediate
+    // tiles than we preloaded. CORRECTIV does the same for their
+    // Greece → Germany → Lithuania jumps.
+    map.jumpTo({ center: step.center, zoom: step.zoom });
+  } else {
+    // Speed-driven fly: MapLibre computes the duration from distance, so
+    // big moves get more time to render (and small moves stay snappy).
+    // Default speed is 1.2; 0.5 is roughly 2.5x slower → way more frames
+    // for MapLibre to actually paint, which is what makes CORRECTIV's
+    // flys look so smooth despite using the same MapLibre engine.
+    map.flyTo({
+      center: step.center,
+      zoom: step.zoom,
+      essential: true,        // play even with prefers-reduced-motion
+      speed: 0.5,
+      curve: 1.42,
+    });
+  }
 
   setHighlight(step.highlight || []);
   setDimMode(step.dim || "off");
