@@ -222,8 +222,13 @@ async function init() {
       // only the byte ranges for the tiles currently in view, not the whole
       // archive — which is what makes this much snappier than the GeoJSON
       // approach where the entire 50 MB had to be downloaded and tessellated.
+      //
+      // The .pmtiles is built (see rebuild_lau_pmtiles.py) with each feature's
+      // MVT id set to its INTEGER position in regionData.locations. That makes
+      // feature-state lookups go through MapLibre's native numeric-id path,
+      // which doesn't have the promoteId+vector-tile race that left Oostende
+      // rendered with a stale bin colour on initial paint.
       url: "pmtiles://data/lau.pmtiles",
-      promoteId: "gisco_id",
     });
     // If the basemap exposes a country-border layer we pass its id as
     // `beforeId` so MapLibre inserts our choropleth *under* it (so the borders
@@ -318,8 +323,10 @@ function refreshBins() {
   for (let i = 0; i < locations.length; i++) {
     const d = computeDelta(i);
     const b = binIndex(d, bins);
+    // The PMTiles features carry their data.json array index as MVT
+    // feature.id, so we key feature-state by that integer i (not gisco_id).
     map.setFeatureState(
-      { source: "lau", sourceLayer: "lau", id: locations[i] },
+      { source: "lau", sourceLayer: "lau", id: i },
       { bin: b }
     );
   }
@@ -377,7 +384,7 @@ function setupYearSlider() {
 
 // ---- Interactions ---------------------------------------------------------
 let hoveredId = null;
-let pinnedId = null;   // gisco_id locked in via click; null = popup follows hover
+let pinnedId = null;   // integer feature.id locked in via click; null = popup follows hover
 
 function attachInteractions() {
   map.on("mousemove", "lau-fill", (e) => {
@@ -432,9 +439,16 @@ function attachInteractions() {
 }
 
 // ---- Popup with D3 line chart --------------------------------------------
-function showPopup(locationId) {
-  const idx = dataByLocation.get(locationId);
+// Accepts either a gisco_id string (e.g. "BE_35013") or the integer index
+// directly. The map's hover/click handlers pass the integer (which is now
+// the MVT feature.id since we baked it into the tiles); the slider's
+// "still-showing-popup" resume path passes the gisco_id from dataset.location.
+function showPopup(locationOrIdx) {
+  const idx = typeof locationOrIdx === "number"
+    ? locationOrIdx
+    : dataByLocation.get(locationOrIdx);
   if (idx == null) return;
+  const locationId = regionData.locations[idx];
   const name = regionData.names[idx] || locationId;
   const panel = document.getElementById("chart-panel");
   panel.dataset.location = locationId;
