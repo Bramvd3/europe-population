@@ -53,9 +53,8 @@ html, body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-body);
-  font-size: 17px;
-  line-height: 1.65;
-  font-feature-settings: "cv11", "ss01";   /* Inter stylistic tweaks */
+  font-size: 19px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -83,13 +82,18 @@ a:hover {
 .site-header {
   background: var(--bg);
   border-bottom: 1px solid var(--rule);
-  position: sticky;
-  top: 0;
+  /* Not sticky — let the header scroll off when the user reaches the
+     scrolly section, so the sticky map can take the full viewport. */
+  position: relative;
   z-index: 100;
-  padding: 10px 24px;
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
 }
 .brand {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
 }
 .brand img {
@@ -128,8 +132,8 @@ a:hover {
   color: var(--ink);
 }
 .article-lead {
-  font-size: 20px;
-  line-height: 1.55;
+  font-size: 23px;
+  line-height: 1.5;
   color: var(--ink-soft);
   margin: 0 0 28px 0;
   font-weight: 400;
@@ -155,9 +159,9 @@ a:hover {
   padding: 28px 24px;
 }
 .prose p {
-  margin: 0 0 18px 0;
-  font-size: 17px;
-  line-height: 1.7;
+  margin: 0 0 20px 0;
+  font-size: 19px;
+  line-height: 1.65;
 }
 .prose p:last-child { margin-bottom: 0; }
 .prose h2 {
@@ -254,8 +258,8 @@ a:hover {
 }
 .scrolly__card p {
   margin: 0;
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 17px;
+  line-height: 1.55;
   color: var(--ink);
 }
 .scrolly__card p strong { color: var(--ink); font-weight: 700; }
@@ -339,7 +343,7 @@ a:hover {
   .article-lead { font-size: 17px; }
   .prose h2 { font-size: 22px; }
   .pull-quote { font-size: 20px; }
-  .site-header { padding: 8px 16px; }
+  .site-header { padding: 0 16px; height: 48px; }
   .brand img { height: 18px; }
   .scrolly__card { max-width: 86vw; padding: 20px 22px; }
   .scrolly__card h2 { font-size: 19px; }
