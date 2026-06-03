@@ -30,8 +30,6 @@ const COLORS = [
 const NO_DATA_COLOR = "rgba(0,0,0,0)";    // transparent → basemap shows through
 
 // ---- State ----------------------------------------------------------------
-let regionData;     // {locations, names, spark, first_year, ..., pops:{...}}
-let dataByLocation; // locations[] index lookup
 let yearA = 1961;
 let yearB = 2024;
 let mode = "pct";
@@ -46,29 +44,19 @@ function binIndex(value, bins) {
   return bins.length;
 }
 
-function effectiveYear(idx, requested, direction) {
-  // direction=+1 fall forward in time, -1 fall backward.
-  const v = regionData.pops[String(requested)][idx];
-  if (v != null) return [requested, v];
+// Walk forward (+1) or backward (-1) from `requested` until we find a year
+// that this feature has data for. Used for the popup info-sentence so the
+// UK (no 2024 data) reads as "between 1961 and 2021".
+function effectiveYear(props, requested, direction) {
+  const k = "pop_" + requested;
+  if (props[k] != null) return [requested, props[k]];
   const range = direction < 0
     ? ALL_YEARS.filter(y => y < requested).reverse()
     : ALL_YEARS.filter(y => y > requested);
   for (const y of range) {
-    const val = regionData.pops[String(y)][idx];
-    if (val != null) return [y, val];
+    if (props["pop_" + y] != null) return [y, props["pop_" + y]];
   }
   return [requested, null];
-}
-
-function computeDelta(idx) {
-  const [eya, pa] = effectiveYear(idx, yearA, +1);
-  const [eyb, pb] = effectiveYear(idx, yearB, -1);
-  if (pa == null || pb == null || eya >= eyb) return null;
-  if (mode === "pct") {
-    if (pa === 0) return null;
-    return (pb - pa) / pa * 100;
-  }
-  return pb - pa;
 }
 
 function formatAbsLabel(v) {
@@ -76,6 +64,51 @@ function formatAbsLabel(v) {
   const abs = Math.abs(v);
   if (abs >= 1000) return sign + (abs / 1000) + "k";
   return sign + abs;
+}
+
+// ---- Paint expression for the choropleth ---------------------------------
+// MVT properties carry the full pop_1961…pop_2024 series, so the fill colour
+// is computed entirely in the paint expression — one setPaintProperty call
+// instead of 107 k setFeatureState iterations on every slider change.
+//
+// For UK gemeenten pop_2024 is null (the JRC dataset stops at 2021 for the
+// UK). When the user has yearB=2024 selected we coalesce to pop_2021 so the
+// UK still gets a colour. For other year requests we read straight.
+function getPopExpr(year) {
+  if (year === 2024) {
+    return ["coalesce", ["get", "pop_2024"], ["get", "pop_2021"]];
+  }
+  return ["get", "pop_" + year];
+}
+
+function buildFillExpr(yA, yB, modeStr) {
+  const bins = modeStr === "pct" ? PCT_BINS : ABS_BINS;
+  const popA = getPopExpr(yA);
+  const popB = getPopExpr(yB);
+  const valExpr = modeStr === "pct"
+    ? ["*", 100, ["/", ["-", popB, popA], popA]]
+    : ["-", popB, popA];
+  return [
+    "case",
+    ["any",
+      ["==", popA, null],
+      ["==", popB, null],
+      ["==", popA, 0],
+    ], NO_DATA_COLOR,
+    [
+      "step", valExpr,
+      COLORS[0],
+      bins[0], COLORS[1],
+      bins[1], COLORS[2],
+      bins[2], COLORS[3],
+      bins[3], COLORS[4],
+      bins[4], COLORS[5],
+      bins[5], COLORS[6],
+      bins[6], COLORS[7],
+      bins[7], COLORS[8],
+      bins[8], COLORS[9],
+    ],
+  ];
 }
 
 // ---- Map setup ------------------------------------------------------------
@@ -166,10 +199,9 @@ async function init() {
   const protocol = new pmtiles.Protocol();
   maplibregl.addProtocol("pmtiles", protocol.tile);
 
-  // Per-region populations + names + sparkline + first/last endpoints. The
-  // geometry lives in the .pmtiles file referenced from the source below.
-  regionData = await fetch("data/data.json").then(r => r.json());
-  dataByLocation = new Map(regionData.locations.map((loc, i) => [loc, i]));
+  // No more data.json: every pop_YEAR value lives in lau-scrolly.pmtiles
+  // as an MVT property, so the paint expression can compute the bin
+  // itself and the popup reads the series straight off feature.properties.
 
   map = new maplibregl.Map({
     container: "map",
@@ -213,18 +245,12 @@ async function init() {
 
     map.addSource("lau", {
       type: "vector",
-      // pmtiles:// protocol intercepted by the library registered above;
-      // resolves to the static .pmtiles file in /data/. The browser fetches
-      // only the byte ranges for the tiles currently in view, not the whole
-      // archive — which is what makes this much snappier than the GeoJSON
-      // approach where the entire 50 MB had to be downloaded and tessellated.
-      //
-      // The .pmtiles is built (see rebuild_lau_pmtiles.py) with each feature's
-      // MVT id set to its INTEGER position in regionData.locations. That makes
-      // feature-state lookups go through MapLibre's native numeric-id path,
-      // which doesn't have the promoteId+vector-tile race that left Oostende
-      // rendered with a stale bin colour on initial paint.
-      url: "pmtiles://data/lau.pmtiles",
+      // lau-scrolly.pmtiles bakes the full 1961–2024 population series
+      // into each feature's MVT properties (built by
+      // rebuild_lau_scrolly_pmtiles.py). The paint expression on lau-fill
+      // computes the bin entirely from feature properties — no JS-side
+      // setFeatureState iteration is needed when the slider/mode changes.
+      url: "pmtiles://data/lau-scrolly.pmtiles",
     });
     // If the basemap exposes a country-border layer we pass its id as
     // `beforeId` so MapLibre inserts our choropleth *under* it (so the borders
@@ -238,14 +264,7 @@ async function init() {
       source: "lau",
       "source-layer": "lau",   // matches `-l lau` passed to tippecanoe
       paint: {
-        "fill-color": [
-          "case",
-          ["==", ["feature-state", "bin"], null], NO_DATA_COLOR,
-          ["match", ["feature-state", "bin"],
-            0, COLORS[0], 1, COLORS[1], 2, COLORS[2], 3, COLORS[3], 4, COLORS[4],
-            5, COLORS[5], 6, COLORS[6], 7, COLORS[7], 8, COLORS[8], 9, COLORS[9],
-            NO_DATA_COLOR],
-        ],
+        "fill-color": buildFillExpr(yearA, yearB, mode),
         "fill-opacity": 0.85,
         "fill-outline-color": "rgba(255,255,255,0)",
       },
@@ -289,43 +308,16 @@ async function init() {
     }, beforeId);
 
     attachInteractions();
-
-    // Defer the first refreshBins() until the LAU source has actually loaded
-    // at least one tile. Otherwise MapLibre's vector source + promoteId path
-    // has a race where the very first tile renders with a stale feature-state
-    // snapshot, which won't be corrected until the user hovers (which forces
-    // a re-render). After the initial fill, every later year-range/mode change
-    // calls refreshBins again synchronously — at that point the source is
-    // hot and setFeatureState propagates instantly.
-    function onceLauLoaded(e) {
-      if (e.sourceId !== "lau" || !map.isSourceLoaded("lau")) return;
-      map.off("sourcedata", onceLauLoaded);
-      refreshBins();
-      map.triggerRepaint();
-    }
-    if (map.isSourceLoaded("lau")) {
-      refreshBins();
-      map.triggerRepaint();
-    } else {
-      map.on("sourcedata", onceLauLoaded);
-    }
+    updateLegend();
+    updateTitle();
   });
 }
 
-// ---- Recompute fill colours ----------------------------------------------
-function refreshBins() {
-  const bins = mode === "pct" ? PCT_BINS : ABS_BINS;
-  const locations = regionData.locations;
-  for (let i = 0; i < locations.length; i++) {
-    const d = computeDelta(i);
-    const b = binIndex(d, bins);
-    // The PMTiles features carry their data.json array index as MVT
-    // feature.id, so we key feature-state by that integer i (not gisco_id).
-    map.setFeatureState(
-      { source: "lau", sourceLayer: "lau", id: i },
-      { bin: b }
-    );
-  }
+// Re-render the choropleth for the current (yearA, yearB, mode). One
+// setPaintProperty call — MapLibre re-evaluates the fill expression for
+// every visible feature on its own.
+function updateMap() {
+  map.setPaintProperty("lau-fill", "fill-color", buildFillExpr(yearA, yearB, mode));
   updateLegend();
   updateTitle();
 }
@@ -366,11 +358,12 @@ function setupYearSlider() {
       `Population change in Europe between ${ya} and ${yb}`;
   });
 
-  // Heavy re-bin only on handle release.
+  // On release, swap the fill expression + re-render the currently-shown
+  // popup if any. Cheap — no per-feature JS loop.
   sliderEl.noUiSlider.on("change", (_v, _h, unencoded) => {
     yearA = ALL_YEARS[Math.round(unencoded[0])];
     yearB = ALL_YEARS[Math.round(unencoded[1])];
-    refreshBins();
+    updateMap();
     const panel = document.getElementById("chart-panel");
     if (panel.style.display !== "none" && panel.dataset.location) {
       showPopup(panel.dataset.location);
@@ -385,7 +378,8 @@ let pinnedId = null;   // integer feature.id locked in via click; null = popup f
 function attachInteractions() {
   map.on("mousemove", "lau-fill", (e) => {
     if (!e.features || e.features.length === 0) return;
-    const id = e.features[0].id;
+    const f = e.features[0];
+    const id = f.id;          // numeric idx, baked into the MVT
     if (id === hoveredId) return;
     if (hoveredId != null) {
       map.setFeatureState({ source: "lau", sourceLayer: "lau", id: hoveredId }, { hover: false });
@@ -393,10 +387,8 @@ function attachInteractions() {
     hoveredId = id;
     map.setFeatureState({ source: "lau", sourceLayer: "lau", id }, { hover: true });
     map.getCanvas().style.cursor = "pointer";
-    // Hover-preview the popup; if a region is pinned via click the pinned
-    // chart stays and hover just updates the highlight, like CORRECTIV.
     if (pinnedId == null) {
-      showPopup(id);
+      showPopup(f);
     }
   });
   map.on("mouseleave", "lau-fill", () => {
@@ -405,7 +397,6 @@ function attachInteractions() {
       hoveredId = null;
     }
     map.getCanvas().style.cursor = "";
-    // Tear down the hover-preview when leaving the map; keep a pinned one.
     if (pinnedId == null) {
       document.getElementById("chart-panel").style.display = "none";
     }
@@ -413,16 +404,20 @@ function attachInteractions() {
   map.on("click", "lau-fill", (e) => {
     if (!e.features || e.features.length === 0) return;
     pinnedId = e.features[0].id;
-    showPopup(pinnedId);
+    showPopup(e.features[0]);
   });
 
   setupYearSlider();
 
-  // Mode toggle (% / abs)
+  // Mode toggle (% / abs) — same single-paint-property update path.
   document.querySelectorAll('input[name="mode"]').forEach(inp => {
     inp.addEventListener("change", (e) => {
       mode = e.target.value;
-      refreshBins();
+      updateMap();
+      const panel = document.getElementById("chart-panel");
+      if (panel.style.display !== "none" && panel.dataset.location) {
+        showPopup(panel.dataset.location);
+      }
     });
   });
 
@@ -435,23 +430,33 @@ function attachInteractions() {
 }
 
 // ---- Popup with D3 line chart --------------------------------------------
-// Accepts either a gisco_id string (e.g. "BE_35013") or the integer index
-// directly. The map's hover/click handlers pass the integer (which is now
-// the MVT feature.id since we baked it into the tiles); the slider's
-// "still-showing-popup" resume path passes the gisco_id from dataset.location.
-function showPopup(locationOrIdx) {
-  const idx = typeof locationOrIdx === "number"
-    ? locationOrIdx
-    : dataByLocation.get(locationOrIdx);
-  if (idx == null) return;
-  const locationId = regionData.locations[idx];
-  const name = regionData.names[idx] || locationId;
+// Accepts either a feature object (from hover/click — fastest, no lookup)
+// or a gisco_id string (resume-from-slider-change path — looks up via
+// querySourceFeatures).
+function showPopup(featureOrGiscoId) {
+  let props;
+  if (typeof featureOrGiscoId === "string") {
+    const matches = map.querySourceFeatures("lau", {
+      sourceLayer: "lau",
+      filter: ["==", ["get", "gisco_id"], featureOrGiscoId],
+    });
+    if (!matches[0]) return;
+    props = matches[0].properties;
+  } else if (featureOrGiscoId && featureOrGiscoId.properties) {
+    props = featureOrGiscoId.properties;
+  } else {
+    return;
+  }
+
+  const locationId = props.gisco_id;
+  const name = props.name || locationId;
   const panel = document.getElementById("chart-panel");
   panel.dataset.location = locationId;
 
-  // Effective years for the sentence
-  const [eya, pa] = effectiveYear(idx, yearA, +1);
-  const [eyb, pb] = effectiveYear(idx, yearB, -1);
+  // Effective years: fall forward for the start year, backward for the end
+  // year. Handles UK 2024 → 2021 and any other gaps in the JRC series.
+  const [eya, pa] = effectiveYear(props, yearA, +1);
+  const [eyb, pb] = effectiveYear(props, yearB, -1);
 
   let sentence;
   if (pa == null || pb == null || eya >= eyb) {
@@ -471,9 +476,10 @@ function showPopup(locationOrIdx) {
   }
   document.getElementById("info-sentence").innerHTML = sentence;
 
-  // Build the line chart from all 8 yearly population values for this region.
+  // Line chart from the eight census years that have data — for the UK
+  // that naturally tops out at 2021, no special-case needed.
   const series = ALL_YEARS
-    .map(y => ({ year: y, pop: regionData.pops[String(y)][idx] }))
+    .map(y => ({ year: y, pop: props["pop_" + y] }))
     .filter(d => d.pop != null);
 
   renderTrendChart(series);

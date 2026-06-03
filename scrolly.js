@@ -121,21 +121,27 @@ function findCountryBorderLayer() {
 // a colour. setPaintProperty('lau-fill', 'fill-color', buildFillExpr(...))
 // is the only thing we need to do when the period changes — no JS loop over
 // 107k features, no feature-state.
+// UK gemeenten have no pop_2024 (JRC's dataset stops at 2021 there). For
+// any step that uses 2024 as an endpoint we coalesce to 2021 so the UK
+// still gets a colour. All other years are straight lookups.
+function getPopExpr(year) {
+  if (year === 2024) {
+    return ["coalesce", ["get", "pop_2024"], ["get", "pop_2021"]];
+  }
+  return ["get", "pop_" + year];
+}
+
 function buildFillExpr(yearA, yearB) {
-  const kA = "pop_" + yearA;
-  const kB = "pop_" + yearB;
-  const pctExpr = [
-    "*",
-    100,
-    ["/", ["-", ["get", kB], ["get", kA]], ["get", kA]],
-  ];
+  const popA = getPopExpr(yearA);
+  const popB = getPopExpr(yearB);
+  const pctExpr = ["*", 100, ["/", ["-", popB, popA], popA]];
   return [
     "case",
     // Missing-data fall-through → transparent (basemap shows through)
     ["any",
-      ["==", ["get", kA], null],
-      ["==", ["get", kB], null],
-      ["==", ["get", kA], 0],
+      ["==", popA, null],
+      ["==", popB, null],
+      ["==", popA, 0],
     ], NO_DATA_COLOR,
     // step(pct, COLORS[0], -8, COLORS[1], -6, COLORS[2], …)
     [
