@@ -10,56 +10,57 @@ const ALL_YEARS = [1961, 1971, 1981, 1991, 2001, 2011, 2021, 2024];
 const PCT_BINS = [-25, -15, -8, -3, 0, 5, 15, 35, 75];
 
 // ---- Three palette options ------------------------------------------------
+// Round 2 — pigment / earth tones rather than synthetic vector colours.
 // Each is 10 entries: index 0 = deepest decline, index 9 = deepest growth.
 
 const PALETTES = {
-  // A — Brown ↔ Teal (FT / Economist style, ColorBrewer BrBG-derived)
-  A: [
-    "#5a3409",   // deep brown
-    "#8c510a",
-    "#bf812d",
-    "#dfc27d",
-    "#f3e3c3",   // pale brown
-    "#cfe9e3",   // pale teal
-    "#80cdc1",
-    "#35978f",
-    "#01665e",
-    "#003c30",   // deep teal
+  // D — Clay ↔ Moss. Mediterranean / fresco pigments, warm sand centre.
+  D: [
+    "#6e2a16",   // dark burnt umber
+    "#944a2e",
+    "#b87253",
+    "#d4a280",
+    "#ecdcc4",   // warm sand
+    "#d8dec0",   // pale sage
+    "#a8b685",
+    "#758d56",
+    "#4d6638",
+    "#2e4321",   // deep moss
   ],
 
-  // B — Orange ↔ VRT-purple (ColorBrewer PuOr-derived, growth anchored
-  // on VRT's --basevio #5541F0 so the map matches the article)
-  B: [
-    "#7a3a06",   // deep orange-brown
-    "#b35806",
-    "#e08214",
-    "#fdb863",
-    "#fde0b8",   // pale orange
-    "#e0d8f9",   // pale purple
-    "#b7a4ee",
-    "#8a78dc",
-    "#6951e6",
-    "#5541F0",   // VRT purple
+  // E — Wine ↔ Petrol. No green at all — for if the green-as-countryside
+  // association keeps tripping people up.
+  E: [
+    "#4e1521",   // deep wine
+    "#75303e",
+    "#97525e",
+    "#b88086",
+    "#ddc1c3",   // dusty mauve
+    "#c4d4d8",   // pale petrol
+    "#8eb1b8",
+    "#527e89",
+    "#2f5963",
+    "#173a45",   // very dark petrol
   ],
 
-  // C — Pink ↔ Green (ColorBrewer PiYG, kept close to current red-green
-  // but with pink instead of fire-engine red)
-  C: [
-    "#8e0152",   // deep pink
-    "#c51b7d",
-    "#de77ae",
-    "#f1b6da",
-    "#fde0ef",   // pale pink
-    "#e6f5d0",   // pale green
-    "#b8e186",
-    "#7fbc41",
-    "#4d9221",
-    "#276419",   // deep green
+  // F — Rust ↔ Ink-blue. Warm-vs-cool earth contrast, like old atlases.
+  // Also avoids green entirely.
+  F: [
+    "#5b251a",   // deep rust
+    "#823b22",
+    "#a96042",
+    "#cb9270",
+    "#ecdac1",   // warm cream
+    "#d4d9e1",   // cool cream
+    "#aab6c8",
+    "#7c8aa3",
+    "#50617c",
+    "#2d3f57",   // deep ink-blue
   ],
 };
 
-let COLORS = PALETTES.A;        // active palette — switched by the toggle
-let palette = "A";
+let COLORS = PALETTES.D;        // active palette — switched by the toggle
+let palette = "D";
 const NO_DATA_COLOR = "rgba(0,0,0,0)";
 
 // ---- State ----------------------------------------------------------------
