@@ -24,16 +24,17 @@
   <div id="map-container">
     <div id="map"></div>
 
-    <!-- Year-period display, top-center. Pure CSS, updated by JS. -->
+    <!-- Year-period display, top-center. Pure CSS, updated by JS.
+         The two endpoint labels float over the track at the exact
+         tick-position of their year — when the period changes the
+         labels slide AND pulse. -->
     <div id="period-pill">
-      <span class="year-a">1961</span>
       <div class="period-track">
-        <!-- Fill spans from year-A position to year-B position -->
         <div class="period-fill" id="period-fill"></div>
-        <!-- Tick marks for the 8 census years -->
         <div class="period-ticks" id="period-ticks"></div>
+        <div class="period-label year-a" style="left: 0%;">1961</div>
+        <div class="period-label year-b" style="left: 100%;">2024</div>
       </div>
-      <span class="year-b">2024</span>
     </div>
 
     <!-- Popup with D3 line chart — opens automatically at specific steps -->

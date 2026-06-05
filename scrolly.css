@@ -60,33 +60,67 @@ body.embedded #story { display: none; }
   z-index: 5;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 18px;
+  padding: 36px 32px 14px 32px;     /* room for the floating year labels */
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border-radius: 999px;
+  border-radius: 6px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   font-variant-numeric: tabular-nums;
   font-size: 14px;
 }
 
-#period-pill .year-a,
-#period-pill .year-b {
+/* Year endpoint labels — float over the track at the exact tick position
+   of their year, with a downward caret pointing at the spot. */
+.period-label {
+  position: absolute;
+  bottom: 14px;
+  transform: translateX(-50%);
   font-weight: 600;
-  color: #444;
-  min-width: 36px;
-  text-align: center;
+  font-size: 13px;
+  line-height: 1;
+  background: #1c1c1c;
+  color: #fff;
+  padding: 4px 9px;
+  border-radius: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  /* `left` is animated — slide when the period changes */
+  transition: left 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.period-label::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  transform: translateX(-50%);
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid #1c1c1c;
 }
 
-#period-pill .year-a.active,
-#period-pill .year-b.active {
-  color: #1c1c1c;
+/* Pulse: a brief purple flash + scale bump when a label's year changes,
+   triggered by toggling the .pulse class from JS. */
+.period-label.pulse {
+  animation: pill-pulse 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@keyframes pill-pulse {
+  0%   { background: #1c1c1c; transform: translateX(-50%) scale(1); }
+  35%  { background: #5541F0; transform: translateX(-50%) scale(1.18); }
+  100% { background: #1c1c1c; transform: translateX(-50%) scale(1); }
+}
+.period-label.pulse::after {
+  animation: pill-pulse-caret 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@keyframes pill-pulse-caret {
+  0%   { border-top-color: #1c1c1c; }
+  35%  { border-top-color: #5541F0; }
+  100% { border-top-color: #1c1c1c; }
 }
 
 .period-track {
   position: relative;
-  width: 220px;
+  width: 260px;                 /* a bit wider so labels don't overlap */
   height: 6px;
   background: rgba(0, 0, 0, 0.08);
   border-radius: 3px;
@@ -99,7 +133,8 @@ body.embedded #story { display: none; }
   height: 100%;
   background: #1c1c1c;
   border-radius: 3px;
-  transition: left 0.6s ease, right 0.6s ease;
+  transition: left 0.7s cubic-bezier(0.2, 0.7, 0.2, 1),
+              right 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 .period-ticks {

@@ -359,11 +359,30 @@ function updatePeriodPill() {
   const idxB = ALL_YEARS.indexOf(currentYearB);
   const pctA = (idxA / (ALL_YEARS.length - 1)) * 100;
   const pctB = (idxB / (ALL_YEARS.length - 1)) * 100;
+
   const fill = document.getElementById("period-fill");
   fill.style.left = pctA + "%";
   fill.style.right = (100 - pctB) + "%";
-  document.querySelector("#period-pill .year-a").textContent = currentYearA;
-  document.querySelector("#period-pill .year-b").textContent = currentYearB;
+
+  const labelA = document.querySelector("#period-pill .year-a");
+  const labelB = document.querySelector("#period-pill .year-b");
+  // Pulse only the label whose year actually changed (avoids a double
+  // flash when only one handle moved).
+  const changedA = labelA.textContent !== String(currentYearA);
+  const changedB = labelB.textContent !== String(currentYearB);
+  labelA.textContent = currentYearA;
+  labelA.style.left = pctA + "%";
+  labelB.textContent = currentYearB;
+  labelB.style.left = pctB + "%";
+  if (changedA) pulseLabel(labelA);
+  if (changedB) pulseLabel(labelB);
+}
+
+function pulseLabel(el) {
+  el.classList.remove("pulse");
+  // Force reflow so re-adding the class restarts the animation.
+  void el.offsetWidth;
+  el.classList.add("pulse");
 }
 
 // ---- Popup (queries feature properties — no data.json) -----------------
