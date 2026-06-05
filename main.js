@@ -323,8 +323,9 @@ function updateMap() {
 }
 
 function updateTitle() {
-  document.getElementById("period-title").textContent =
-    `Population change in Europe between ${yearA} and ${yearB}`;
+  // Static Dutch title — the period is communicated by the slider tooltips
+  // and by the trend-chart sentence in the popup.
+  document.getElementById("period-title").textContent = "Bevolkingsevolutie";
 }
 
 // 2-handle range slider over ALL_YEARS. We use integer indices (0..7)
@@ -350,13 +351,8 @@ function setupYearSlider() {
     },
   });
 
-  // Live title while dragging — cheap text update, no map re-render.
-  sliderEl.noUiSlider.on("update", (_v, _h, unencoded) => {
-    const ya = ALL_YEARS[Math.round(unencoded[0])];
-    const yb = ALL_YEARS[Math.round(unencoded[1])];
-    document.getElementById("period-title").textContent =
-      `Population change in Europe between ${ya} and ${yb}`;
-  });
+  // Title is static now — period is communicated by the slider tooltips +
+  // popup sentence — so we no longer rewrite it while dragging.
 
   // On release, swap the fill expression + re-render the currently-shown
   // popup if any. Cheap — no per-feature JS loop.
@@ -398,7 +394,7 @@ function attachInteractions() {
     }
     map.getCanvas().style.cursor = "";
     if (pinnedId == null) {
-      document.getElementById("chart-panel").style.display = "none";
+      setPopupShown(false);
     }
   });
   map.on("click", "lau-fill", (e) => {
@@ -425,7 +421,7 @@ function attachInteractions() {
   document.getElementById("close-button").addEventListener("click", (e) => {
     e.preventDefault();
     pinnedId = null;
-    document.getElementById("chart-panel").style.display = "none";
+    setPopupShown(false);
   });
 }
 
@@ -460,18 +456,19 @@ function showPopup(featureOrGiscoId) {
 
   let sentence;
   if (pa == null || pb == null || eya >= eyb) {
-    sentence = `<strong>${name}</strong>: no comparable data for this period.`;
+    sentence = `<strong>${name}</strong>: geen vergelijkbare data voor deze periode.`;
   } else {
     const delta = mode === "pct" ? (pb - pa) / pa * 100 : pb - pa;
     if (mode === "pct") {
-      const direction = delta >= 0 ? "grew" : "declined";
-      sentence = `In <strong>${name}</strong>, population <strong>${direction}</strong> ` +
-                 `by <strong>${Math.abs(delta).toFixed(1)}</strong> per cent ` +
-                 `between ${eya} and ${eyb}.`;
+      const verb = delta >= 0 ? "groeide" : "daalde";
+      const pct = Math.abs(delta).toFixed(1).replace(".", ",");
+      sentence = `In <strong>${name}</strong> ${verb} het aantal inwoners met ` +
+                 `<strong>${pct}%</strong> tussen ${eya} en ${eyb}.`;
     } else {
-      const direction = delta >= 0 ? "gained" : "lost";
-      sentence = `<strong>${name}</strong> ${direction} <strong>${Math.abs(delta).toLocaleString()}</strong> ` +
-                 `residents between ${eya} and ${eyb}.`;
+      const abs = Math.abs(delta).toLocaleString("nl-BE");
+      const verb = delta >= 0 ? "won" : "verloor";
+      sentence = `<strong>${name}</strong> ${verb} <strong>${abs}</strong> ` +
+                 `inwoners tussen ${eya} en ${eyb}.`;
     }
   }
   document.getElementById("info-sentence").innerHTML = sentence;
@@ -483,7 +480,15 @@ function showPopup(featureOrGiscoId) {
     .filter(d => d.pop != null);
 
   renderTrendChart(series);
-  panel.style.display = "block";
+  setPopupShown(true);
+}
+
+// Single source of truth for showing/hiding the popup panel. Mirrors the
+// state onto <body class="popup-open"> so the legend can step aside on
+// mobile (where there's no room for both side by side).
+function setPopupShown(shown) {
+  document.getElementById("chart-panel").style.display = shown ? "block" : "none";
+  document.body.classList.toggle("popup-open", shown);
 }
 
 function renderTrendChart(series) {

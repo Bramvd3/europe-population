@@ -9,11 +9,11 @@
   Serve with:  python -m http.server 8000   (from this folder)
   Or drop the folder behind any static file host and embed in an <iframe>.
 -->
-<html lang="en">
+<html lang="nl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>European population change since 1961</title>
+  <title>Bevolkingsevolutie</title>
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css">
   <link rel="stylesheet" href="style.css">
@@ -24,11 +24,13 @@
 
   <!-- Period slider + mode toggle, top-left, overlayed on the map -->
   <div id="period-buttons" class="map-overlay-element">
-    <p id="period-title">Population change in Europe between 1961 and 2024</p>
+    <p id="period-title">Bevolkingsevolutie</p>
     <div id="year-slider"></div>
-    <div class="mode-row">
-      <label><input type="radio" name="mode" value="pct" checked> % change</label>
-      <label><input type="radio" name="mode" value="abs"> Δ population</label>
+    <!-- mode-row is hidden via CSS — the code paths for "abs" still work,
+         we just don't expose the toggle in the UI. -->
+    <div class="mode-row" hidden>
+      <label><input type="radio" name="mode" value="pct" checked> % verandering</label>
+      <label><input type="radio" name="mode" value="abs"> Δ bevolking</label>
     </div>
   </div>
 
@@ -48,11 +50,13 @@
     <div class="map-overlay-element">
       <div id="map_legend"></div>
       <div id="map-footer">
-        Data from
+        Data:
         <a href="https://data.jrc.ec.europa.eu/dataset/37fcacbf-12e2-4b31-b1af-83117a74b2c7"
            target="_blank" rel="noopener">JRC</a>.
-        Map inspired by
-        <a href="https://correctiv.org/en/europe/" target="_blank" rel="noopener">CORRECTIV.Europe</a>.
+        Kaart:
+        <a href="https://protomaps.com" target="_blank" rel="noopener">Protomaps</a>
+        /
+        <a href="https://openstreetmap.org" target="_blank" rel="noopener">OSM</a>.
       </div>
     </div>
   </div>

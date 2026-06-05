@@ -129,8 +129,10 @@ html, body {
   margin-top: 4px;
 }
 
+/* The mode toggle (% verandering / Δ bevolking) is hidden — code paths
+   for the "abs" mode still exist, we just don't expose the switch. */
 .mode-row {
-  display: flex;
+  display: none;
   gap: 14px;
   font-size: 12px;
   color: var(--ink-soft);
@@ -243,4 +245,67 @@ html, body {
 /* MapLibre attribution: small + unobtrusive in the bottom-right */
 .maplibregl-ctrl-attrib {
   font-size: 10px;
+}
+
+/* ============================================================
+   Mobile — phones ≤ 720px wide
+   ============================================================
+   Strategy: stretch each overlay to fill the available width so the
+   slider, popup, and legend get the screen real estate they need.
+   Legend steps aside when the popup is open so the two don't overlap.
+   ============================================================ */
+@media (max-width: 720px) {
+  /* Top strip: period title + year slider, full width */
+  #period-buttons {
+    left: 8px;
+    right: 8px;
+    top: 8px;
+    max-width: none;
+    padding: 10px 12px;
+  }
+  #period-title {
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  #year-slider {
+    margin: 18px 8px 32px;
+  }
+  .noUi-tooltip {
+    font-size: 10px;
+  }
+  .noUi-value {
+    font-size: 9px;
+  }
+
+  /* Bottom-left: popup, full width */
+  #chart-panel-wrapper {
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    max-width: none;
+  }
+  #popup_chart svg {
+    height: 110px;
+  }
+  .info-sentence {
+    font-size: 12.5px;
+  }
+
+  /* Bottom-right: legend, full width — but step aside when the popup
+     is open (mobile can't fit both on the same row). */
+  #map-legend-wrapper {
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    max-width: none;
+  }
+  body.popup-open #map-legend-wrapper {
+    display: none;
+  }
+
+  /* The MapLibre attribution would otherwise sit on top of the legend
+     band on small screens — push it up a hair. */
+  .maplibregl-ctrl-bottom-right {
+    bottom: 4px;
+  }
 }
