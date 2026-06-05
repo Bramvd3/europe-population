@@ -16,7 +16,7 @@
 const ALL_YEARS = [1961, 1971, 1981, 1991, 2001, 2011, 2021, 2024];
 
 // Same 10 bins / colours as the interactive embed.
-const PCT_BINS = [-8, -6, -4, -2, 0, 5, 10, 20, 50];
+const PCT_BINS = [-25, -15, -8, -3, 0, 5, 15, 35, 75];
 const COLORS = [
   "#d46780", "#df91a3", "#e8acb3", "#f0c6c3", "#f7e1d4",
   "#e7e7c3", "#d0d3a2", "#bac082", "#8e9847", "#646c1d",

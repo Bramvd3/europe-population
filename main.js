@@ -9,7 +9,7 @@
 const ALL_YEARS = [1961, 1971, 1981, 1991, 2001, 2011, 2021, 2024];
 
 // Same 10 fixed bins as the parent app, in user-specified value space.
-const PCT_BINS = [-8, -6, -4, -2, 0, 5, 10, 20, 50];
+const PCT_BINS = [-25, -15, -8, -3, 0, 5, 15, 35, 75];
 const ABS_BINS = [-20000, -10000, -5000, -1000, 0, 1000, 5000, 10000, 20000];
 
 // CORRECTIV's discrete diverging palette — 10 colours (5 red + 5 green,
