@@ -68,7 +68,10 @@ html, body {
   top: 12px;
   left: 12px;
   z-index: 5;
-  max-width: 320px;
+  /* Fixed width on desktop so the slider keeps its old horizontal
+     room — the title 'Bevolkingsevolutie' is short and would otherwise
+     let the panel collapse and crowd the year labels. */
+  width: 320px;
 }
 
 #period-title {
@@ -260,6 +263,7 @@ html, body {
     left: 8px;
     right: 8px;
     top: 8px;
+    width: auto;       /* override the 320px desktop width */
     max-width: none;
     padding: 10px 12px;
   }
