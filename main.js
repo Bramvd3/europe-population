@@ -342,7 +342,7 @@ function updateMap() {
 function updateTitle() {
   // Static Dutch title — the period is communicated by the slider tooltips
   // and by the trend-chart sentence in the popup.
-  document.getElementById("period-title").textContent = "Bevolkingsevolutie";
+  document.getElementById("period-title").textContent = "Bevolkingsevolutie in Europa";
 }
 
 // 2-handle range slider over ALL_YEARS. We use integer indices (0..7)
