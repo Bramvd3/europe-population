@@ -243,6 +243,22 @@ async function init() {
       map.setPaintProperty("places_country", "text-color", "#5c5c5c");
     }
 
+    // Push city / hamlet labels later than Protomaps' defaults so a
+    // continental-zoom view doesn't get crowded with small-town labels.
+    // Each place feature carries a `pmap:min_zoom` — we require the
+    // current zoom to be ≥ that value + LABEL_DELAY before the label
+    // is drawn. Tweak up to hide more, down to show more.
+    const LABEL_DELAY = 2;
+    ["places_locality", "places_subplace", "places_region"].forEach(id => {
+      if (!map.getLayer(id)) return;
+      const existing = map.getFilter(id) ?? ["all"];
+      const stricter = [
+        ">=", ["zoom"],
+        ["+", ["coalesce", ["get", "pmap:min_zoom"], 0], LABEL_DELAY],
+      ];
+      map.setFilter(id, ["all", existing, stricter]);
+    });
+
     map.addSource("lau", {
       type: "vector",
       // lau-scrolly.pmtiles bakes the full 1961–2024 population series

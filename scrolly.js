@@ -192,6 +192,23 @@ async function init() {
       map.setPaintProperty("places_country", "text-color", "#5c5c5c");
     }
 
+    // Push city / hamlet labels later than Protomaps' defaults so a
+    // continental-zoom view of Europe (or a national-zoom view of
+    // Belgium) doesn't get crowded with small-town labels. Each place
+    // feature carries a `pmap:min_zoom` — we require the current zoom
+    // to be ≥ that value + LABEL_DELAY before the label is drawn.
+    // Tweak LABEL_DELAY up to hide more, down to show more.
+    const LABEL_DELAY = 2;
+    ["places_locality", "places_subplace", "places_region"].forEach(id => {
+      if (!map.getLayer(id)) return;
+      const existing = map.getFilter(id) ?? ["all"];
+      const stricter = [
+        ">=", ["zoom"],
+        ["+", ["coalesce", ["get", "pmap:min_zoom"], 0], LABEL_DELAY],
+      ];
+      map.setFilter(id, ["all", existing, stricter]);
+    });
+
     // Scrolly-specific LAU source — properties include pop_1961…pop_2024.
     map.addSource("lau", {
       type: "vector",
