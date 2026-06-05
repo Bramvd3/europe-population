@@ -318,11 +318,13 @@ html, body {
   .step p { font-size: 14px; }
 
   #period-pill {
-    /* Add the device safe-area so the pill clears the iOS status bar /
-       Android notch even when the scrolly iframe sticks to device top. */
     top: calc(12px + var(--safe-top, env(safe-area-inset-top, 0px)));
     font-size: 12px;
-    padding: 7px 12px;
+    /* Top padding mirrors the desktop value (~30px) so the floating
+       year labels — which sit ~29px above the track top — fit INSIDE
+       the pill instead of overflowing above it. Without this they
+       end up behind the iOS status bar / Android notch on mobile. */
+    padding: 30px 16px 10px 16px;
     gap: 8px;
   }
   .period-track { width: 140px; }
