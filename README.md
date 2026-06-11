@@ -1,7 +1,7 @@
 # Bevolkingsevolutie in Europa — VRT NWS
 
 Deployable static site that powers the
-[`europe-population-map-protomaps`](https://bramvd3.github.io/europe-population-map-protomaps/)
+[`europe-population`](https://bramvd3.github.io/europe-population/)
 GitHub Pages deploy.
 
 Three pages, served from this folder:
