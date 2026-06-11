@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<!--
+  Self-contained PMTiles / server config test page.
+
+  Render a real choropleth of Belgium from belgium-test.pmtiles. If
+  this page works on a given host, it proves the host serves
+  .pmtiles correctly:
+    1. HTTP Range support (206 Partial Content)
+    2. .pmtiles MIME type accepted
+    3. No gzip-on-binary corruption
+    4. CORS not blocking (if relevant)
+
+  Usage:
+    Upload test.html + data/belgium-test.pmtiles to the target host,
+    keeping the relative path between them (so test.html can fetch
+    data/belgium-test.pmtiles). Visit test.html. The status panel
+    top-left will say ✓ if everything worked.
+-->
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PMTiles range-request test</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <style>
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #map { width: 100%; height: 100%; }
+    #info {
+      position: absolute; top: 12px; left: 12px; z-index: 5;
+      background: rgba(255, 255, 255, 0.97);
+      padding: 14px 18px; max-width: 340px;
+      border-radius: 8px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+      font-size: 13px; line-height: 1.5; color: #111;
+    }
+    #info h2 { margin: 0 0 8px; font-size: 16px; font-weight: 700; }
+    #info p { margin: 0 0 8px; }
+    #info code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px; background: #f0f0f3;
+      padding: 1px 5px; border-radius: 3px;
+    }
+    #status { font-weight: 600; }
+    #status.ok { color: #1c6e34; }
+    #status.fail { color: #b00020; }
+    .legend {
+      position: absolute; bottom: 16px; right: 16px; z-index: 5;
+      background: rgba(255, 255, 255, 0.96);
+      padding: 8px 10px; border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      font-size: 11px; color: #444;
+    }
+    .legend-bar {
+      display: flex; height: 8px; width: 240px;
+      margin: 3px 0 5px; border-radius: 2px; overflow: hidden;
+    }
+    .legend-bar span { flex: 1; }
+    .legend-ticks {
+      display: flex; justify-content: space-between;
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div id="info">
+    <h2>PMTiles server-test</h2>
+    <p>Belgische gemeenten, % bevolkingsverandering 2001 → 2024.</p>
+    <p>Bestand: <code>data/belgium-test.pmtiles</code> (320 KB)</p>
+    <p id="status">⏳ Loading…</p>
+  </div>
+
+  <div class="legend">
+    <div>% verandering 2001 → 2024</div>
+    <div class="legend-bar">
+      <span style="background:#d46780"></span>
+      <span style="background:#df91a3"></span>
+      <span style="background:#e8acb3"></span>
+      <span style="background:#f0c6c3"></span>
+      <span style="background:#f7e1d4"></span>
+      <span style="background:#e7e7c3"></span>
+      <span style="background:#d0d3a2"></span>
+      <span style="background:#bac082"></span>
+      <span style="background:#8e9847"></span>
+      <span style="background:#646c1d"></span>
+    </div>
+    <div class="legend-ticks"><span>−25%</span><span>0</span><span>+75%</span></div>
+  </div>
+
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="https://unpkg.com/pmtiles@3.2.0/dist/pmtiles.js"></script>
+  <script>
+    const protocol = new pmtiles.Protocol();
+    maplibregl.addProtocol("pmtiles", protocol.tile);
+
+    const PCT_BINS = [-25, -15, -8, -3, 0, 5, 15, 35, 75];
+    const COLORS = [
+      "#d46780", "#df91a3", "#e8acb3", "#f0c6c3", "#f7e1d4",
+      "#e7e7c3", "#d0d3a2", "#bac082", "#8e9847", "#646c1d",
+    ];
+
+    const map = new maplibregl.Map({
+      container: "map",
+      center: [4.6, 50.7],   // Belgium centroid-ish
+      zoom: 7,
+      attributionControl: false,
+      style: {
+        version: 8,
+        sources: {
+          lau: {
+            type: "vector",
+            // Relative URL — when this page is served from <host>/path/test.html,
+            // the browser fetches <host>/path/data/belgium-test.pmtiles.
+            url: "pmtiles://data/belgium-test.pmtiles",
+          },
+        },
+        layers: [
+          { id: "background", type: "background",
+            paint: { "background-color": "#f5f5f7" } },
+          { id: "lau-fill", type: "fill", source: "lau", "source-layer": "lau",
+            paint: {
+              "fill-color": [
+                "case",
+                ["==", ["get", "pct"], null], "rgba(0,0,0,0)",
+                ["step", ["get", "pct"],
+                  COLORS[0],
+                  PCT_BINS[0], COLORS[1], PCT_BINS[1], COLORS[2],
+                  PCT_BINS[2], COLORS[3], PCT_BINS[3], COLORS[4],
+                  PCT_BINS[4], COLORS[5], PCT_BINS[5], COLORS[6],
+                  PCT_BINS[6], COLORS[7], PCT_BINS[7], COLORS[8],
+                  PCT_BINS[8], COLORS[9],
+                ],
+              ],
+              "fill-opacity": 0.9,
+            } },
+          { id: "lau-outline", type: "line", source: "lau", "source-layer": "lau",
+            paint: { "line-color": "rgba(255,255,255,0.7)", "line-width": 0.5 } },
+        ],
+      },
+    });
+
+    const status = document.getElementById("status");
+
+    map.on("load", () => {
+      status.textContent = "✓ PMTiles laden + Range-requests werken";
+      status.className = "ok";
+    });
+    map.on("error", (e) => {
+      status.textContent = "✗ Error: " + (e.error?.message || "onbekend");
+      status.className = "fail";
+      console.error("PMTiles test error:", e);
+    });
+
+    // Show a tooltip with the gemeente name + pct on hover.
+    const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+    map.on("mousemove", "lau-fill", (e) => {
+      if (!e.features?.length) return;
+      const f = e.features[0];
+      map.getCanvas().style.cursor = "pointer";
+      const sign = f.properties.pct > 0 ? "+" : "";
+      popup.setLngLat(e.lngLat)
+        .setHTML(`<strong>${f.properties.name}</strong><br>` +
+                 `${sign}${f.properties.pct}% (2001 → 2024)`)
+        .addTo(map);
+    });
+    map.on("mouseleave", "lau-fill", () => {
+      map.getCanvas().style.cursor = "";
+      popup.remove();
+    });
+  </script>
+</body>
+</html>
