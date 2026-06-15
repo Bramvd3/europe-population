@@ -510,10 +510,15 @@ function renderTrendChart(series) {
   const innerH = H - margin.top - margin.bottom;
 
   const container = d3.select("#popup_chart");
-  container.selectAll("svg").remove();
+  // Clear ALL prior content (svg + any leftover <p> bail-out messages).
+  // Without this, repeated hovers on no-data features would stack up
+  // 'Not enough data' paragraphs that never get cleared.
+  container.selectAll("*").remove();
 
   if (series.length < 2) {
-    container.append("p").text("Not enough data to plot.");
+    // Render nothing — the info-sentence already says 'geen vergelijkbare
+    // data voor deze periode', so a second 'no data' message in the chart
+    // area would be redundant.
     return;
   }
 
