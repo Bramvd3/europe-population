@@ -160,8 +160,6 @@ async function init() {
   const protocol = new pmtiles.Protocol();
   maplibregl.addProtocol("pmtiles", protocol.tile);
 
-  buildPeriodTicks();
-
   map = new maplibregl.Map({
     container: "map",
     style: buildProtomapsStyle(),
@@ -291,8 +289,6 @@ async function init() {
     }, beforeId);
 
     drawLegend();
-    updatePeriodPill();
-
     // No preload overlay. The map shows step 0 immediately; tiles for later
     // steps stream in as the user scrolls. The slow flyTo speed (0.5) gives
     // MapLibre time to keep up.
@@ -309,7 +305,7 @@ async function init() {
         } else if (event.data?.type === "safeArea" && typeof event.data.top === "number") {
           // Parent article reads env(safe-area-inset-top) — which is 0
           // inside cross-document iframes — and forwards the value here.
-          // We expose it as --safe-top so the period-pill CSS can use it.
+          // We expose it as --safe-top so overlay UI can use safe-area insets.
           document.documentElement.style.setProperty(
             "--safe-top",
             event.data.top + "px"
@@ -363,50 +359,6 @@ function setHighlight(giscoIds) {
   map.setFilter("lau-highlight", [
     "in", ["get", "gisco_id"], ["literal", giscoIds || []],
   ]);
-}
-
-// ---- Period pill (top-center) ------------------------------------------
-function buildPeriodTicks() {
-  const ticks = document.getElementById("period-ticks");
-  ALL_YEARS.forEach((y, i) => {
-    const pct = (i / (ALL_YEARS.length - 1)) * 100;
-    const el = document.createElement("div");
-    el.className = "tick";
-    el.style.left = pct + "%";
-    el.dataset.year = y;
-    ticks.appendChild(el);
-  });
-}
-
-function updatePeriodPill() {
-  const idxA = ALL_YEARS.indexOf(currentYearA);
-  const idxB = ALL_YEARS.indexOf(currentYearB);
-  const pctA = (idxA / (ALL_YEARS.length - 1)) * 100;
-  const pctB = (idxB / (ALL_YEARS.length - 1)) * 100;
-
-  const fill = document.getElementById("period-fill");
-  fill.style.left = pctA + "%";
-  fill.style.right = (100 - pctB) + "%";
-
-  const labelA = document.querySelector("#period-pill .year-a");
-  const labelB = document.querySelector("#period-pill .year-b");
-  // Pulse only the label whose year actually changed (avoids a double
-  // flash when only one handle moved).
-  const changedA = labelA.textContent !== String(currentYearA);
-  const changedB = labelB.textContent !== String(currentYearB);
-  labelA.textContent = currentYearA;
-  labelA.style.left = pctA + "%";
-  labelB.textContent = currentYearB;
-  labelB.style.left = pctB + "%";
-  if (changedA) pulseLabel(labelA);
-  if (changedB) pulseLabel(labelB);
-}
-
-function pulseLabel(el) {
-  el.classList.remove("pulse");
-  // Force reflow so re-adding the class restarts the animation.
-  void el.offsetWidth;
-  el.classList.add("pulse");
 }
 
 // ---- Popup (queries feature properties — no data.json) -----------------
@@ -597,7 +549,6 @@ function applyStep(step) {
     currentYearB = step.yearB;
     // One paint-property update re-evaluates the fill for every visible LAU.
     map.setPaintProperty("lau-fill", "fill-color", buildFillExpr(currentYearA, currentYearB));
-    updatePeriodPill();
   }
 
   // On mobile, zoom out a notch so the same geographical area still fits

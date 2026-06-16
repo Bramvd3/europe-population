@@ -45,120 +45,9 @@ html, body {
 
 /* Re-enable pointer events for the interactive overlay panels. The map
    itself stays click-through so wheel/touch over empty map area scrolls. */
-#period-pill,
 #chart-panel,
 #map-legend-wrapper .map-overlay-element {
   pointer-events: auto;
-}
-
-/* ---- Period pill (top-center, updated by JS) --------------------------
-   Top offset accounts for the device safe-area:
-     - Standalone (scrolly.html opened directly): --safe-top is unset,
-       so the fallback env(safe-area-inset-top) kicks in.
-     - Embedded (in article.html iframe): the parent reads
-       env(safe-area-inset-top) on its side and posts the value to us
-       via postMessage; scrolly.js sets --safe-top accordingly.
-       env() in iframes always returns 0 — that's why we need the var. */
-#period-pill {
-  position: absolute;
-  top: calc(24px + var(--safe-top, env(safe-area-inset-top, 0px)));
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  padding: 36px 32px 14px 32px;     /* room for the floating year labels */
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-radius: 6px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  font-variant-numeric: tabular-nums;
-  font-size: 14px;
-}
-
-/* Year endpoint labels — float over the track at the exact tick position
-   of their year, with a downward caret pointing at the spot. */
-.period-label {
-  position: absolute;
-  bottom: 14px;
-  transform: translateX(-50%);
-  font-weight: 600;
-  font-size: 13px;
-  line-height: 1;
-  background: #1c1c1c;
-  color: #fff;
-  padding: 4px 9px;
-  border-radius: 12px;
-  white-space: nowrap;
-  pointer-events: none;
-  /* `left` is animated — slide when the period changes */
-  transition: left 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-.period-label::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -4px;
-  transform: translateX(-50%);
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 4px solid #1c1c1c;
-}
-
-/* Pulse: a brief purple flash + scale bump when a label's year changes,
-   triggered by toggling the .pulse class from JS. */
-.period-label.pulse {
-  animation: pill-pulse 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-@keyframes pill-pulse {
-  0%   { background: #1c1c1c; transform: translateX(-50%) scale(1); }
-  35%  { background: #5541F0; transform: translateX(-50%) scale(1.18); }
-  100% { background: #1c1c1c; transform: translateX(-50%) scale(1); }
-}
-.period-label.pulse::after {
-  animation: pill-pulse-caret 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-@keyframes pill-pulse-caret {
-  0%   { border-top-color: #1c1c1c; }
-  35%  { border-top-color: #5541F0; }
-  100% { border-top-color: #1c1c1c; }
-}
-
-.period-track {
-  position: relative;
-  width: 260px;                 /* a bit wider so labels don't overlap */
-  height: 6px;
-  background: rgba(0, 0, 0, 0.08);
-  border-radius: 3px;
-  overflow: visible;
-}
-
-.period-fill {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  background: #1c1c1c;
-  border-radius: 3px;
-  transition: left 0.7s cubic-bezier(0.2, 0.7, 0.2, 1),
-              right 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-
-.period-ticks {
-  position: absolute;
-  top: -3px;
-  bottom: -3px;
-  left: 0;
-  right: 0;
-  pointer-events: none;
-}
-.period-ticks .tick {
-  position: absolute;
-  width: 2px;
-  height: 12px;
-  background: rgba(0, 0, 0, 0.18);
-  border-radius: 1px;
-  transform: translateX(-50%);
 }
 
 /* ---- Popup with D3 chart (same styling as the main embed) ------------- */
@@ -316,18 +205,6 @@ html, body {
   .step h1 { font-size: 26px; }
   .step h2 { font-size: 19px; }
   .step p { font-size: 14px; }
-
-  #period-pill {
-    top: calc(12px + var(--safe-top, env(safe-area-inset-top, 0px)));
-    font-size: 12px;
-    /* Top padding mirrors the desktop value (~30px) so the floating
-       year labels — which sit ~29px above the track top — fit INSIDE
-       the pill instead of overflowing above it. Without this they
-       end up behind the iOS status bar / Android notch on mobile. */
-    padding: 30px 16px 10px 16px;
-    gap: 8px;
-  }
-  .period-track { width: 140px; }
 
   #chart-panel-wrapper {
     bottom: 92px;     /* clear of the card */
