@@ -7,8 +7,8 @@ GitHub Pages deploy.
 Three pages, served from this folder:
 
 | URL | Wat |
-|---|---|
-| `/` | Het verhalende artikel (Nederlandstalig, in VRT NWS-stijl) |
+| --- | --- |
+| `/` | Het verhalende artikel met inline scrolly + inline interactieve kaart |
 | `/scrolly/` | Standalone scrolly — kan ook geëmbed worden via `/scrolly/?embed=1` |
 | `/map/` | Vrij verkenbare kaart met jaarslider en bevolkingsgrafiek per gemeente |
 
@@ -24,21 +24,24 @@ Three pages, served from this folder:
 
 ## Map-structuur
 
-```
+```text
 webapp/
 ├── README.md
 ├── index.html                ← het artikel (root)
 ├── article.css               ← styling van het artikel
-├── article.js                ← scrollama observer + postMessage naar scrolly-iframe
+├── article.js                ← observer voor scrolly steps + lazy init van de inline interactieve kaart
 ├── style.css                 ← shared design tokens, fonts, overlay-styling
+├── js/
+│   ├── scrolly-inline.js     ← inline scrolly-map controller voor de rootpagina
+│   └── interactive-inline.js ← inline interactieve map controller voor de rootpagina
 │
 ├── scrolly/
-│   ├── index.html            ← scrollytelling (standalone of via ?embed=1)
+│   ├── index.html            ← standalone scrollytelling (fallback/debug)
 │   ├── scrolly.css           ← scrolly-specifieke layout (sticky map + cards)
 │   └── scrolly.js            ← STEPS array, applyStep, period pill, popup chart
 │
 ├── map/
-│   ├── index.html            ← interactieve kaart met jaarslider
+│   ├── index.html            ← standalone interactieve kaart (fallback/debug)
 │   └── main.js               ← slider, paint expressions, popup, legend
 │
 ├── assets/

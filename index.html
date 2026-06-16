@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <!--
-  Article page combining the scrolly + the interactive embed. Body lives
-  in the normal page flow; the scrolly section uses a sticky iframe
-  overlaid by floating text cards (driven by IntersectionObserver →
-  postMessage to the iframe). The interactive embed appears as a regular
-  iframe near the end so the reader can explore the data themselves.
+  Article page combining inline scrolly + inline interactive map. Body
+  lives in the normal page flow; the scrolly section uses a sticky map
+  overlaid by floating text cards (driven by IntersectionObserver).
+  The interactive map appears near the end so the reader can explore
+  the data in-page without nested iframes.
 -->
 <html lang="nl">
 <head>
@@ -14,6 +14,8 @@
   <!-- Inter font (rsms.me) is no longer loaded — the article uses
        Roobert exclusively (self-hosted under assets/fonts/), so the
        external Inter stylesheet was dead code. -->
+  <link rel="stylesheet" href="assets/vendor/maplibre-gl.css">
+  <link rel="stylesheet" href="assets/vendor/nouislider.min.css">
   <link rel="stylesheet" href="article.css">
 </head>
 <body>
@@ -56,17 +58,32 @@
     </section>
 
     <!-- ===== SCROLLY SECTION ===== -->
-    <!-- Sticky map iframe (z=0) + scrollable text cards (z=1, pulled up
-         with margin-top:-100vh so they overlay the iframe). The article
-         JS observes which card is in viewport and postMessages the
-         iframe to apply that step. -->
+    <!-- Sticky inline map (z=0) + scrollable text cards (z=1). -->
     <section class="scrolly">
       <div class="scrolly__map">
-        <iframe
-          src="scrolly/?embed=1"
-          id="scrolly-iframe"
-          title="Interactieve kaart van Europa"
-          loading="lazy"></iframe>
+        <div class="scrolly-inline">
+          <div id="scrolly-map"></div>
+          <div class="scrolly-inline__chart-wrap">
+            <div id="scrolly-chart-panel" class="map-overlay-element" style="display: none;">
+              <div class="scrolly-inline__popup">
+                <p class="info-sentence" id="scrolly-info-sentence"></p>
+                <div id="scrolly-popup-chart"></div>
+              </div>
+            </div>
+          </div>
+          <div class="scrolly-inline__legend-wrap">
+            <div class="map-overlay-element">
+              <div id="scrolly-map-legend"></div>
+              <div class="map-footer">
+                Data:
+                <a href="https://data.jrc.ec.europa.eu/dataset/37fcacbf-12e2-4b31-b1af-83117a74b2c7" target="_blank" rel="noopener">JRC</a>.
+                Kaart:
+                <a href="https://protomaps.com" target="_blank" rel="noopener">Protomaps</a> /
+                <a href="https://openstreetmap.org" target="_blank" rel="noopener">OSM</a>.
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="scrolly__boxes">
         <div class="scrolly__box" data-step="0">
@@ -294,18 +311,40 @@
       </p>
     </section>
 
-    <!-- ===== INTERACTIVE EMBED ===== -->
+    <!-- ===== INTERACTIVE MAP ===== -->
     <section class="interactive">
-      <iframe
-        src="map/"
-        id="interactive-iframe"
-        title="Interactieve kaart van de Europese bevolkingsverandering"
-        loading="lazy"></iframe>
-      <p class="interactive__caption">
-        <strong>Hoe te gebruiken:</strong> sleep de jaarschuiver bovenaan
-        om het vergelijkingsinterval aan te passen. Hover voor een
-        gemeente om de volledige grafiek te zien. Klik om vast te zetten.
-      </p>
+      <div class="interactive-inline" id="interactive-root">
+        <div class="interactive-inline__map" data-role="map"></div>
+        <div class="interactive-inline__period map-overlay-element">
+          <p data-role="period-title">Bevolkingsevolutie in Europa</p>
+          <div data-role="year-slider"></div>
+          <div class="mode-row" hidden>
+            <label><input type="radio" name="mode" value="pct" checked> % verandering</label>
+            <label><input type="radio" name="mode" value="abs"> Δ bevolking</label>
+          </div>
+        </div>
+        <div class="interactive-inline__chart-wrap">
+          <div data-role="chart-panel" class="map-overlay-element" style="display: none;">
+            <div class="interactive-inline__popup">
+              <a data-role="close-button">×</a>
+              <p class="info-sentence" data-role="info-sentence"></p>
+              <div data-role="popup-chart"></div>
+            </div>
+          </div>
+        </div>
+        <div class="interactive-inline__legend-wrap">
+          <div class="map-overlay-element">
+            <div data-role="legend"></div>
+            <div class="map-footer">
+              Data:
+              <a href="https://data.jrc.ec.europa.eu/dataset/37fcacbf-12e2-4b31-b1af-83117a74b2c7" target="_blank" rel="noopener">JRC</a>.
+              Kaart:
+              <a href="https://protomaps.com" target="_blank" rel="noopener">Protomaps</a> /
+              <a href="https://openstreetmap.org" target="_blank" rel="noopener">OSM</a>.
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
   </article>
@@ -325,6 +364,11 @@
     </div>
   </div>
 
-  <script src="article.js"></script>
+  <script src="assets/vendor/maplibre-gl.js"></script>
+  <script src="assets/vendor/pmtiles.js"></script>
+  <script src="assets/vendor/protomaps-themes-base.js"></script>
+  <script src="assets/vendor/d3.min.js"></script>
+  <script src="assets/vendor/nouislider.min.js"></script>
+  <script type="module" src="article.js"></script>
 </body>
 </html>
