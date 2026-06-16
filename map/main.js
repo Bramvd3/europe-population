@@ -241,7 +241,7 @@ async function init() {
     // Each place feature carries a `min_zoom` (the zoom from which
     // Protomaps would naturally start showing it). We require the
     // current zoom to be ≥ that value + LABEL_DELAY.
-    const LABEL_DELAY = 2;
+    const LABEL_DELAY = 4;
     ["places_locality", "places_subplace", "places_region"].forEach(id => {
       if (!map.getLayer(id)) return;
       const existing = map.getFilter(id) ?? ["all"];
