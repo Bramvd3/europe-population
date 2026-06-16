@@ -7,7 +7,7 @@ const scrollyController = await initScrollyInline({
   chartPanelElement: document.getElementById("scrolly-chart-panel"),
   infoSentenceElement: document.getElementById("scrolly-info-sentence"),
   popupChartElement: document.getElementById("scrolly-popup-chart"),
-  legendElement: document.getElementById("scrolly-map-legend"),
+  legendElement: document.getElementById("scrolly-card-legend"),
 });
 
   let lastSentStep = -1;

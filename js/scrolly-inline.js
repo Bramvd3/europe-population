@@ -73,7 +73,7 @@ export async function initScrollyInline(options = {}) {
   const infoSentenceEl = options.infoSentenceElement;
   const popupChartEl = options.popupChartElement;
   const legendEl = options.legendElement;
-  if (!mapEl || !chartPanel || !infoSentenceEl || !popupChartEl || !legendEl) {
+  if (!mapEl || !chartPanel || !infoSentenceEl || !popupChartEl) {
     throw new Error("Missing required inline scrolly elements.");
   }
 
@@ -142,6 +142,7 @@ export async function initScrollyInline(options = {}) {
   }
 
   function drawLegend() {
+    if (!legendEl) return;
     const el = d3.select(legendEl);
     el.selectAll("*").remove();
     const W = 300; const H = 24;

@@ -273,20 +273,6 @@ a:hover {
 #scrolly-chart-panel {
   width: 320px;
 }
-.scrolly-inline__legend-wrap {
-  position: absolute;
-  bottom: 16px;
-  right: 16px;
-  z-index: 6;
-}
-#scrolly-map-legend {
-  margin-bottom: 6px;
-}
-#scrolly-map-legend svg {
-  width: 100%;
-  height: auto;
-  display: block;
-}
 .legend-number {
   font-size: 9px;
   font-family: "Roobert", Helvetica, Arial, sans-serif;
@@ -364,6 +350,14 @@ a:hover {
   color: var(--ink);
 }
 .scrolly__card p strong { color: var(--ink); font-weight: 700; }
+#scrolly-card-legend {
+  margin-top: 14px;
+}
+#scrolly-card-legend svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
 
 .card-kicker {
   display: inline-block;
