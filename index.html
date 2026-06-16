@@ -19,23 +19,39 @@
   <link rel="stylesheet" href="article.css">
 </head>
 <body>
-  <!-- ===== Article header ===== -->
-  <article class="article">
-    <header class="article-head">
-      <h1 class="article-title">
-        Hoe de Belgische steden ophielden met leeglopen — terwijl de rest
-        van Europa nog steeds krimpt
-      </h1>
-      <p class="article-lead">
+  <!-- ===== Hero intro =====
+       Full-bleed cinematic header: stock photo background with a dark
+       gradient overlay, VRT NWS logo on top, a two-line title in
+       Roobert, a short lead paragraph, and a bouncing chevron that
+       links to the rest of the article. -->
+  <section class="hero-intro">
+    <img class="hero-intro__bg"
+         src="https://images.vrt.be/orig/2026/01/16/260116_intro_img.jpg"
+         alt=""
+         loading="eager">
+    <div class="hero-intro__overlay">
+      <a href="https://vrtnws.be" class="hero-intro__brand" target="_blank" rel="noopener" aria-label="VRT NWS">
+        <img src="assets/vrtnws-logo.png" alt="VRT NWS">
+      </a>
+      <h1 class="hero-intro__title">Hoe de Belgische steden ophielden met leeglopen</h1>
+      <p class="hero-intro__subtitle"></p>
+      <p class="hero-intro__lead">
         Tussen 1961 en 2001 verloren Antwerpen, Gent, Brussel, Luik en
         Charleroi tussen 13 en 26 procent van hun inwoners. Na de
-        eeuwwisseling draaide het patroon. Een nieuwe Europese
-        data-analyse op gemeenteniveau brengt de hele geschiedenis in beeld.
+        eeuwwisseling draaide het patroon.
       </p>
-    </header>
+      <a href="#article-body" class="hero-intro__chevron" aria-label="Scroll naar het artikel">
+        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+          <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+  </section>
 
+  <article class="article">
     <!-- ===== Intro paragraphs ===== -->
-    <section class="prose">
+    <section class="prose" id="article-body">
       <p>
         Een nieuwe analyse van de <strong>Joint Research Centre</strong>
         van de Europese Commissie brengt voor het eerst de
@@ -54,7 +70,6 @@
         provincie Luxemburg ontstaat een stille demografische groeipool
         door grensarbeid naar het Groothertogdom.
       </p>
-      <p class="prose__hint">↓ Scroll om door het verhaal te bladeren.</p>
     </section>
 
     <!-- ===== SCROLLY SECTION ===== -->

@@ -49,17 +49,18 @@ html, body {
   height: 100%;
 }
 
-/* Common look for the three overlay panels (controls / popup / legend) */
+/* VRT NWS scrollbox — translucent white with strong blur + soft
+   shadow. Used by the three overlay panels (slider, popup, legend). */
 .map-overlay-element {
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border-radius: 6px;
-  box-shadow: 0 2px 12px rgba(3, 16, 55, 0.10);
-  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(3, 16, 55, 0.15);
+  padding: 1rem;
   color: var(--ink);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 1rem;
+  line-height: 1.4;
 }
 
 /* --- Top-left: period buttons + mode toggle --- */
@@ -173,12 +174,13 @@ html, body {
 #close-button:hover { color: var(--vrt-accent); }
 
 .info-sentence {
-  margin: 0 0 6px 0;
-  font-size: 13px;
+  margin: 0;
+  font-size: 1rem;
   color: var(--ink);
-  line-height: 1.45;
+  line-height: 1.4;
+  font-weight: 500;
 }
-.info-sentence strong { color: var(--ink); font-weight: 600; }
+.info-sentence strong { color: var(--vrt-accent); font-weight: 600; }
 
 #popup_chart svg {
   display: block;
