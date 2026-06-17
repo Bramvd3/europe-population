@@ -14,6 +14,10 @@ function formatAbsLabel(v) {
   return sign + abs;
 }
 
+function formatPopulation(value) {
+  return value.toLocaleString("nl-BE");
+}
+
 function getPopExpr(year) {
   if (year === 2024) return ["coalesce", ["get", "pop_2024"], ["get", "pop_2021"]];
   return ["get", "pop_" + year];
@@ -96,8 +100,8 @@ export async function initInteractiveInline(options = {}) {
   }
 
   function renderTrendChart(series) {
-    const W = 380; const H = 120;
-    const margin = { top: 15, right: 60, bottom: 20, left: 60 };
+    const W = 460; const H = 190;
+    const margin = { top: 34, right: 92, bottom: 32, left: 92 };
     const innerW = W - margin.left - margin.right;
     const innerH = H - margin.top - margin.bottom;
     const container = d3.select(popupChartEl);
@@ -110,6 +114,31 @@ export async function initInteractiveInline(options = {}) {
     g.append("g").attr("transform", `translate(0,${innerH})`).call(d3.axisBottom(x).tickFormat(d3.format("d")).ticks(6));
     const line = d3.line().x((d) => x(d.year)).y((d) => y(d.pop));
     g.append("path").datum(series).attr("fill", "none").attr("stroke", "#031037").attr("stroke-width", 2).attr("stroke-linecap", "round").attr("stroke-linejoin", "round").attr("d", line);
+
+    const first = series[0];
+    const last = series[series.length - 1];
+    const markers = [
+      { point: first, anchor: "end", dx: -7, dy: 4, className: "chart-value-label" },
+      { point: last, anchor: "start", dx: 7, dy: 4, className: "chart-value-label" },
+    ].filter((marker) => marker.point);
+    const seenYears = new Set();
+    for (const { point, anchor, dx, dy, className } of markers) {
+      if (seenYears.has(point.year)) continue;
+      seenYears.add(point.year);
+      g.append("circle")
+        .attr("r", 4.2)
+        .attr("cx", x(point.year))
+        .attr("cy", y(point.pop))
+        .attr("fill", "#5541F0")
+        .attr("stroke", "#fff")
+        .attr("stroke-width", 1.5);
+      g.append("text")
+        .attr("class", className)
+        .attr("text-anchor", anchor)
+        .attr("x", x(point.year) + dx)
+        .attr("y", Math.max(16, Math.min(innerH - 10, y(point.pop) + dy)))
+        .text(formatPopulation(point.pop));
+    }
   }
 
   function showPopup(featureOrGiscoId) {

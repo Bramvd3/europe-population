@@ -12,6 +12,7 @@ const STEPS = [
   { yearA: 1961, yearB: 2001, center: [4.4, 50.85], zoom: 9, highlight: [], dim: "belgium", countryHighlight: null },
   { yearA: 1961, yearB: 2001, center: [5.15, 51.2], zoom: 8.4, highlight: [], dim: "belgium", countryHighlight: null },
   { yearA: 1961, yearB: 2001, center: [2.85, 50.9], zoom: 9.5, highlight: [], dim: "belgium", countryHighlight: null },
+  { yearA: 2001, yearB: 2024, center: [5, 51], zoom: 5.5, highlight: [], dim: "off", countryHighlight: null },
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: "belgium", countryHighlight: null },
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: THREE_BIG, dim: "belgium", countryHighlight: null, multiPopup: THREE_BIG },
   { yearA: 2001, yearB: 2024, center: [5.85, 49.83], zoom: 8.5, highlight: [], dim: "belgium", countryHighlight: "LUX" },
@@ -44,6 +45,13 @@ function getPopExpr(year) {
   return ["get", "pop_" + year];
 }
 
+function formatCompactPopulation(value) {
+  const abs = Math.abs(value);
+  if (abs >= 1000000) return (value / 1000000).toFixed(1).replace(".", ",") + " mln";
+  if (abs >= 1000) return Math.round(value / 1000) + "k";
+  return value.toLocaleString("nl-BE");
+}
+
 function buildFillExpr(yearA, yearB) {
   const popA = getPopExpr(yearA);
   const popB = getPopExpr(yearB);
@@ -70,10 +78,8 @@ function buildFillExpr(yearA, yearB) {
 export async function initScrollyInline(options = {}) {
   const mapEl = options.mapElement;
   const chartPanel = options.chartPanelElement;
-  const infoSentenceEl = options.infoSentenceElement;
-  const popupChartEl = options.popupChartElement;
   const legendEl = options.legendElement;
-  if (!mapEl || !chartPanel || !infoSentenceEl || !popupChartEl) {
+  if (!mapEl || !chartPanel) {
     throw new Error("Missing required inline scrolly elements.");
   }
 
@@ -107,38 +113,126 @@ export async function initScrollyInline(options = {}) {
     chartPanel.classList.remove("multi");
   }
 
-  function showMultiPopup(giscoIds) {
-    chartPanel.classList.add("multi");
-    const cities = giscoIds.map((id) => {
+  const inlineChartTimers = new Map();
+
+  function cancelInlineChartRender(targetEl) {
+    const timer = inlineChartTimers.get(targetEl);
+    if (timer) {
+      window.clearTimeout(timer);
+      inlineChartTimers.delete(targetEl);
+    }
+  }
+
+  function getInlineChartCities(giscoIds) {
+    return giscoIds.map((id) => {
       const p = getLauProperties(id);
       if (!p) return null;
       const name = (p.name || id).split(" / ")[0];
-      const series = ALL_YEARS.map((y) => ({ year: y, pop: p["pop_" + y] })).filter((d) => d.pop != null && d.pop !== 0);
+      const series = ALL_YEARS.map((y) => ({ year: y, pop: p["pop_" + y] }))
+        .filter((d) => d.pop != null && d.pop !== 0);
       return series.length ? { name, series } : null;
     }).filter(Boolean);
-    const cityNames = cities.map((c) => c.name).join(", ");
-    infoSentenceEl.innerHTML = `<strong>${cityNames}</strong>: drie steden, één patroon. De daling tot rond 2000, dan een duidelijke knik omhoog.`;
-    d3.select(popupChartEl).selectAll("*").remove();
-    const row = d3.select(popupChartEl).append("div").style("display", "flex").style("gap", "10px");
+  }
+
+  function drawInlineCharts(cities, targetEl) {
+    const root = d3.select(targetEl);
+    root.selectAll("*").remove();
+    const rowEl = root.append("div").attr("class", "step-charts__row");
     for (const { name, series } of cities) {
-      const cell = row.append("div").style("flex", "1").style("min-width", "0");
-      cell.append("div").style("font-size", "11px").style("font-weight", "600").style("margin-bottom", "2px").text(name);
-      const W = 160; const H = 110;
-      const m = { top: 16, right: 8, bottom: 18, left: 8 };
+      const cell = rowEl.append("div").attr("class", "step-charts__cell");
+      cell.append("div").attr("class", "step-charts__name").text(name);
+      const W = 380, H = 164;
+      const m = { top: 28, right: 34, bottom: 30, left: 34 };
       const iw = W - m.left - m.right;
       const ih = H - m.top - m.bottom;
-      const svg = cell.append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("width", "100%").style("display", "block");
+      const svg = cell.append("svg")
+        .attr("viewBox", `0 0 ${W} ${H}`)
+        .attr("width", "100%")
+        .style("display", "block");
       const g = svg.append("g").attr("transform", `translate(${m.left},${m.top})`);
       const x = d3.scaleLinear().domain(d3.extent(series, (d) => d.year)).range([0, iw]);
       const minPop = d3.min(series, (d) => d.pop);
       const maxPop = d3.max(series, (d) => d.pop);
       const span = Math.max(maxPop - minPop, 1);
-      const y = d3.scaleLinear().domain([minPop - span * 0.4, maxPop + span * 0.15]).range([ih, 0]);
-      g.append("line").attr("x1", x(2001)).attr("x2", x(2001)).attr("y1", 0).attr("y2", ih).attr("stroke", "#bbb").attr("stroke-width", 1).attr("stroke-dasharray", "2,2");
+      const y = d3.scaleLinear()
+        .domain([minPop - span * 0.4, maxPop + span * 0.15])
+        .range([ih, 0]);
+      g.append("g")
+        .attr("class", "chart-x-axis")
+        .attr("transform", `translate(0,${ih})`)
+        .call(d3.axisBottom(x).tickValues([1961, 2001, 2024]).tickFormat(d3.format("d")).tickSizeOuter(0).tickSize(4));
+      g.append("line")
+        .attr("x1", x(2001)).attr("x2", x(2001))
+        .attr("y1", 0).attr("y2", ih)
+        .attr("stroke", "rgba(3, 16, 55, 0.25)")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "2,2");
       const line = d3.line().x((d) => x(d.year)).y((d) => y(d.pop)).curve(d3.curveMonotoneX);
-      g.append("path").datum(series).attr("fill", "none").attr("stroke", "#222").attr("stroke-width", 1.5).attr("d", line);
+      g.append("path")
+        .datum(series)
+        .attr("fill", "none")
+        .attr("stroke", "var(--darkvio, #031037)")
+        .attr("stroke-width", 1.8)
+        .attr("stroke-linecap", "round")
+        .attr("stroke-linejoin", "round")
+        .attr("d", line);
+      const markers = [
+        { point: series[0], anchor: "start", dx: 5, dy: 4, className: "chart-value-label" },
+        { point: series.find((d) => d.year === 2001), anchor: "middle", dx: 0, dy: -7, className: "chart-value-label chart-value-label--turn" },
+        { point: series[series.length - 1], anchor: "end", dx: -5, dy: 4, className: "chart-value-label" },
+      ].filter((marker) => marker.point);
+
+      for (const { point, anchor, dx, dy, className } of markers) {
+        g.append("circle")
+          .attr("cx", x(point.year))
+          .attr("cy", y(point.pop))
+          .attr("r", point.year === 2001 ? 4.6 : 3.6)
+          .attr("fill", point.year === 2001 ? "#d46780" : "#5541F0")
+          .attr("stroke", "#fff")
+          .attr("stroke-width", 1.4);
+        g.append("text")
+          .attr("class", className)
+          .attr("text-anchor", anchor)
+          .attr("x", x(point.year) + dx)
+          .attr("y", y(point.pop) + dy)
+          .text(formatCompactPopulation(point.pop));
+      }
     }
-    chartPanel.style.display = "block";
+    targetEl.dataset.chartsRendered = "true";
+  }
+
+  function scheduleInlineCharts(giscoIds, targetEl, attempt = 0) {
+    if (!targetEl) return;
+    if (targetEl.dataset.chartsRendered === "true") return;
+    cancelInlineChartRender(targetEl);
+    const timer = window.setTimeout(() => {
+      inlineChartTimers.delete(targetEl);
+
+      const cities = getInlineChartCities(giscoIds);
+      if (cities.length < giscoIds.length && attempt < 20) {
+        scheduleInlineCharts(giscoIds, targetEl, attempt + 1);
+        return;
+      }
+      if (cities.length) drawInlineCharts(cities, targetEl);
+    }, attempt === 0 ? 100 : 200);
+    inlineChartTimers.set(targetEl, timer);
+  }
+
+  // Render three stacked mini line-charts inside the scrolly card. The
+  // card's body text already frames them.
+  function renderInlineCharts(giscoIds, targetEl) {
+    if (!targetEl) return;
+    scheduleInlineCharts(giscoIds, targetEl);
+  }
+
+  function renderAllInlineCharts() {
+    STEPS.forEach((step, index) => {
+      if (!step.multiPopup) return;
+      const targetEl = document.querySelector(
+        `.scrolly__box[data-step="${index}"] .step-charts`
+      );
+      if (targetEl) renderInlineCharts(step.multiPopup, targetEl);
+    });
   }
 
   function drawLegend() {
@@ -196,8 +290,14 @@ export async function initScrollyInline(options = {}) {
     setHighlight(step.highlight || []);
     setDimMode(step.dim || "off");
     setCountryHighlight(step.countryHighlight || null);
-    if (step.multiPopup) setTimeout(() => showMultiPopup(step.multiPopup), 200);
-    else hidePopup();
+
+    hidePopup();
+    if (step.multiPopup) {
+      const targetEl = document.querySelector(
+        `.scrolly__box[data-step="${index}"] .step-charts`
+      );
+      if (targetEl) renderInlineCharts(step.multiPopup, targetEl);
+    }
   }
 
   await new Promise((resolve) => {
@@ -223,6 +323,8 @@ export async function initScrollyInline(options = {}) {
       map.addLayer({ id: "country-highlight", type: "line", source: "protomaps", "source-layer": "boundaries", filter: ["all", ["<=", ["get", "kind_detail"], 2], ["==", ["get", "brk_a3"], "ZZZ"]], paint: { "line-color": "#1c1c1c", "line-width": 3 }, layout: { visibility: "none" } }, beforeId);
       drawLegend();
       applyStep(0);
+      renderAllInlineCharts();
+      map.once("idle", renderAllInlineCharts);
       resolve();
     });
   });

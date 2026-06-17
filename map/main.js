@@ -503,9 +503,13 @@ function setPopupShown(shown) {
   document.body.classList.toggle("popup-open", shown);
 }
 
+function formatPopulation(value) {
+  return value.toLocaleString("nl-BE");
+}
+
 function renderTrendChart(series) {
-  const W = 380, H = 120;
-  const margin = { top: 15, right: 60, bottom: 20, left: 60 };
+  const W = 460, H = 190;
+  const margin = { top: 34, right: 92, bottom: 32, left: 92 };
   const innerW = W - margin.left - margin.right;
   const innerH = H - margin.top - margin.bottom;
 
@@ -554,25 +558,30 @@ function renderTrendChart(series) {
     .attr("stroke-linejoin", "round")
     .attr("d", line);
 
-  // Endpoint labels + dots
-  const first = series[0], last = series[series.length - 1];
-  g.append("text")
-    .attr("class", "endpoint-label")
-    .attr("text-anchor", "end")
-    .attr("x", x(first.year) - 6)
-    .attr("y", y(first.pop) + 4)
-    .text(first.pop.toLocaleString());
-  g.append("text")
-    .attr("class", "endpoint-label")
-    .attr("text-anchor", "start")
-    .attr("x", x(last.year) + 6)
-    .attr("y", y(last.pop) + 4)
-    .text(last.pop.toLocaleString());
-
-  g.append("circle").attr("r", 3.5).attr("cx", x(first.year)).attr("cy", y(first.pop))
-    .attr("fill", "#5541F0").attr("stroke", "#fff").attr("stroke-width", 1.5);
-  g.append("circle").attr("r", 3.5).attr("cx", x(last.year)).attr("cy", y(last.pop))
-    .attr("fill", "#5541F0").attr("stroke", "#fff").attr("stroke-width", 1.5);
+  const first = series[0];
+  const last = series[series.length - 1];
+  const markers = [
+    { point: first, anchor: "end", dx: -7, dy: 4, className: "endpoint-label" },
+    { point: last, anchor: "start", dx: 7, dy: 4, className: "endpoint-label" },
+  ].filter((marker) => marker.point);
+  const seenYears = new Set();
+  for (const { point, anchor, dx, dy, className } of markers) {
+    if (seenYears.has(point.year)) continue;
+    seenYears.add(point.year);
+    g.append("circle")
+      .attr("r", 4.2)
+      .attr("cx", x(point.year))
+      .attr("cy", y(point.pop))
+      .attr("fill", "#5541F0")
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 1.5);
+    g.append("text")
+      .attr("class", className)
+      .attr("text-anchor", anchor)
+      .attr("x", x(point.year) + dx)
+      .attr("y", Math.max(16, Math.min(innerH - 10, y(point.pop) + dy)))
+      .text(formatPopulation(point.pop));
+  }
 }
 
 // ---- Legend ---------------------------------------------------------------
