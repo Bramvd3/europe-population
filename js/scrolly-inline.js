@@ -6,20 +6,57 @@ const NO_DATA_COLOR = "rgba(0,0,0,0)";
 
 const BIG_CITIES = ["BE_44021", "BE_11002", "BE_21004", "BE_62063", "BE_52011"];
 const THREE_BIG = ["BE_11002", "BE_44021", "BE_21004"];
+// Aalst, Wetteren, Mechelen, Tienen — best-guess gisco_ids (BE_NIS codes).
+const FOUR_SMALLER = ["BE_41002", "BE_42025", "BE_12025", "BE_24107"];
+
+// `dim` is now an array of country-code prefixes to KEEP visible (rest is
+// dimmed). null / empty array = no dim. ['BE_'] = only Belgium kept;
+// ['FR_','ES_','PT_'] = France + Iberian peninsula stay coloured, rest fades.
+// Steps with `chapter: true` are full-screen chapter dividers — the map
+// just holds whatever state the previous step left it in (smooth pause).
 const STEPS = [
-  { yearA: 1961, yearB: 2024, center: [5, 51], zoom: 5.5, highlight: [], dim: "off", countryHighlight: null },
-  { yearA: 1961, yearB: 2001, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: "belgium", countryHighlight: null },
-  { yearA: 1961, yearB: 2001, center: [4.4, 50.85], zoom: 9, highlight: [], dim: "belgium", countryHighlight: null },
-  { yearA: 1961, yearB: 2001, center: [5.15, 51.2], zoom: 8.4, highlight: [], dim: "belgium", countryHighlight: null },
-  { yearA: 1961, yearB: 2001, center: [2.85, 50.9], zoom: 9.5, highlight: [], dim: "belgium", countryHighlight: null },
-  { yearA: 2001, yearB: 2024, center: [5, 51], zoom: 5.5, highlight: [], dim: "off", countryHighlight: null },
-  { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: "belgium", countryHighlight: null },
-  { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: THREE_BIG, dim: "belgium", countryHighlight: null, multiPopup: THREE_BIG },
-  { yearA: 2001, yearB: 2024, center: [5.85, 49.83], zoom: 8.5, highlight: [], dim: "belgium", countryHighlight: "LUX" },
-  { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.5, highlight: [], dim: "belgium", countryHighlight: null },
-  { yearA: 2001, yearB: 2024, center: [6, 49.5], zoom: 5.8, highlight: [], dim: "off", countryHighlight: null },
-  { yearA: 2001, yearB: 2024, center: [-3.8, 40.5], zoom: 5.4, highlight: [], dim: "off", countryHighlight: null, transition: "jump" },
-  { yearA: 2001, yearB: 2024, center: [25, 56.5], zoom: 5.3, highlight: [], dim: "off", countryHighlight: null, transition: "jump" },
+  // 0 — Europe overview, introduces the colour legend.
+  { yearA: 1961, yearB: 2024, center: [10, 52], zoom: 4.5, highlight: [], dim: null, countryHighlight: null },
+  // 1 — Chapter: 2 Grote Europese trends.
+  { yearA: 1961, yearB: 2024, center: [10, 52], zoom: 4.5, highlight: [], dim: null, countryHighlight: null, chapter: true },
+  // 2 — Aantrekkingspolen: focus France + Iberian.
+  { yearA: 1961, yearB: 2024, center: [0, 45], zoom: 4.7, highlight: [], dim: ["FR_", "ES_", "PT_"], countryHighlight: null },
+  // 3 — Diagonale du vide: focus France, two dashed VRT-purple lines bound the band.
+  { yearA: 1961, yearB: 2024, center: [2.5, 46.5], zoom: 5.2, highlight: [], dim: ["FR_", "ES_", "PT_"], countryHighlight: null, showDiagonal: true },
+  // 4 — España Vaciada: focus Iberian only.
+  { yearA: 1961, yearB: 2024, center: [-3.8, 40.5], zoom: 5.3, highlight: [], dim: ["FR_", "ES_", "PT_"], countryHighlight: null },
+  // 5 — Emigratie uit Oost-Europa: focus RO + BG + EL.
+  { yearA: 1961, yearB: 2024, center: [25, 43], zoom: 5.0, highlight: [], dim: ["RO_", "BG_", "EL_"], countryHighlight: null, transition: "jump" },
+  // 6 — Chapter: Terug naar België.
+  { yearA: 1961, yearB: 2001, center: [4.6, 50.7], zoom: 6.5, highlight: [], dim: null, countryHighlight: null, chapter: true },
+  // 7 — Leegloop van de steden (5 grote BE steden highlighted).
+  { yearA: 1961, yearB: 2001, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
+  // 8 — Aalst, Wetteren, Mechelen, Tienen.
+  { yearA: 1961, yearB: 2001, center: [4.4, 50.95], zoom: 8.5, highlight: FOUR_SMALLER, dim: ["BE_"], countryHighlight: null },
+  // 9 — Randgemeenten rond Brussel.
+  { yearA: 1961, yearB: 2001, center: [4.4, 50.85], zoom: 9.0, highlight: [], dim: ["BE_"], countryHighlight: null },
+  // 10 — Antwerpen + omliggende gemeenten.
+  { yearA: 1961, yearB: 2001, center: [4.7, 51.2], zoom: 9.5, highlight: [], dim: ["BE_"], countryHighlight: null },
+  // 11 — Limburg.
+  { yearA: 1961, yearB: 2001, center: [5.4, 50.95], zoom: 9.0, highlight: [], dim: ["BE_"], countryHighlight: null },
+  // 12 — Westhoek (1961-2001).
+  { yearA: 1961, yearB: 2001, center: [2.85, 50.9], zoom: 9.5, highlight: [], dim: ["BE_"], countryHighlight: null },
+  // 13 — Chapter: De 21e eeuw.
+  { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 6.5, highlight: [], dim: null, countryHighlight: null, chapter: true },
+  // 14 — Steden groeien terug (BE focus).
+  { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: [], dim: ["BE_"], countryHighlight: null },
+  // 15 — De knik in elke grafiek (5 cities highlighted + 3 in-card charts).
+  { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null, multiPopup: THREE_BIG },
+  // 16 — Brussel +50% (same focus as 15).
+  { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
+  // 17 — Luxemburgse grens (ontdim BE + Groothertogdom).
+  { yearA: 2001, yearB: 2024, center: [5.85, 49.83], zoom: 8.5, highlight: [], dim: ["BE_", "LU_"], countryHighlight: "LUX" },
+  // 18 — Westhoek (2001-2024).
+  { yearA: 2001, yearB: 2024, center: [2.85, 50.9], zoom: 9.5, highlight: [], dim: ["BE_"], countryHighlight: null },
+  // 19 — Vlaanderen amper rood.
+  { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: [], dim: ["BE_"], countryHighlight: null },
+  // 20 — Contrast met grote buurlanden (zoom uit, no dim).
+  { yearA: 2001, yearB: 2024, center: [6, 49.5], zoom: 5.8, highlight: [], dim: null, countryHighlight: null, transition: "jump" },
 ];
 
 const PROTOMAPS_KEY = "d3b78e1318dd7bcb";
@@ -253,16 +290,28 @@ export async function initScrollyInline(options = {}) {
     map.setFilter("lau-highlight", ["in", ["get", "gisco_id"], ["literal", giscoIds || []]]);
   }
 
-  function setDimMode(mode) {
-    if (mode === "off") {
+  // `prefixes` is an array of LAU code prefixes to KEEP visible (e.g.
+  // ["BE_"] or ["FR_","ES_","PT_"]). null / empty array = no dim.
+  function setDimMode(prefixes) {
+    if (!prefixes || !prefixes.length) {
       map.setLayoutProperty("lau-dim", "visibility", "none");
       return;
     }
-    let filter;
-    if (mode === "belgium") filter = ["!=", ["slice", ["get", "gisco_id"], 0, 3], "BE_"];
-    else filter = ["all", ["!=", ["slice", ["get", "gisco_id"], 0, 3], "BE_"], ["!=", ["slice", ["get", "gisco_id"], 0, 3], "LU_"]];
-    map.setFilter("lau-dim", filter);
+    // Dim every LAU whose code does NOT start with any kept prefix.
+    // Filter expression: ["all", ["!=", slice, p1], ["!=", slice, p2], …]
+    const clauses = ["all"];
+    for (const p of prefixes) {
+      clauses.push(["!=", ["slice", ["get", "gisco_id"], 0, p.length], p]);
+    }
+    map.setFilter("lau-dim", clauses);
     map.setLayoutProperty("lau-dim", "visibility", "visible");
+  }
+
+  // Diagonale du vide — two dashed VRT-purple lines bounding the band of
+  // depopulating French communes. Drawn only on step 3.
+  function setDiagonalVisible(visible) {
+    if (!map.getLayer("diagonale")) return;
+    map.setLayoutProperty("diagonale", "visibility", visible ? "visible" : "none");
   }
 
   function setCountryHighlight(brkA3) {
@@ -288,8 +337,9 @@ export async function initScrollyInline(options = {}) {
     if (step.transition === "jump") map.jumpTo({ center: step.center, zoom });
     else map.flyTo({ center: step.center, zoom, essential: true, speed: 0.5, curve: 1.42 });
     setHighlight(step.highlight || []);
-    setDimMode(step.dim || "off");
+    setDimMode(step.dim);
     setCountryHighlight(step.countryHighlight || null);
+    setDiagonalVisible(!!step.showDiagonal);
 
     hidePopup();
     if (step.multiPopup) {
@@ -321,6 +371,34 @@ export async function initScrollyInline(options = {}) {
       map.addLayer({ id: "lau-dim", type: "fill", source: "lau", "source-layer": "lau", filter: ["!=", ["slice", ["get", "gisco_id"], 0, 3], "ZZ_"], paint: { "fill-color": "#ffffff", "fill-opacity": 0.78 }, layout: { visibility: "none" } }, beforeId);
       map.addLayer({ id: "lau-highlight", type: "line", source: "lau", "source-layer": "lau", filter: ["in", ["get", "gisco_id"], ["literal", []]], paint: { "line-color": "#1c1c1c", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.2, 8, 2, 11, 2.5] } }, beforeId);
       map.addLayer({ id: "country-highlight", type: "line", source: "protomaps", "source-layer": "boundaries", filter: ["all", ["<=", ["get", "kind_detail"], 2], ["==", ["get", "brk_a3"], "ZZZ"]], paint: { "line-color": "#1c1c1c", "line-width": 3 }, layout: { visibility: "none" } }, beforeId);
+
+      // Diagonale du vide — two dashed VRT-purple lines bounding the
+      // band of depopulating French communes (NE-Ardennes → SW-Landes).
+      // Coordinates are approximate so we can tune visually.
+      map.addSource("diagonale", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [
+            { type: "Feature", properties: {}, geometry: { type: "LineString",
+              coordinates: [[4.72, 49.77], [3.30, 47.80], [1.40, 45.50], [-0.30, 43.50]] } },
+            { type: "Feature", properties: {}, geometry: { type: "LineString",
+              coordinates: [[5.60, 48.20], [4.20, 46.80], [2.80, 44.80], [1.50, 42.90]] } },
+          ],
+        },
+      });
+      map.addLayer({
+        id: "diagonale",
+        type: "line",
+        source: "diagonale",
+        paint: {
+          "line-color": "#5541F0",
+          "line-width": 5,
+          "line-dasharray": [1.4, 1.4],
+          "line-opacity": 0.95,
+        },
+        layout: { visibility: "none", "line-cap": "round" },
+      });
       drawLegend();
       applyStep(0);
       renderAllInlineCharts();

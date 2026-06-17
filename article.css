@@ -816,8 +816,24 @@ a:hover {
   .scrolly__card { max-width: 86vw; padding: 20px 22px; }
   .scrolly__card--charts { max-width: 92vw; }
   .scrolly__card h2 { font-size: 19px; }
-  .scrolly__box { padding: 0 4vw; justify-content: center; }
-  .scrolly__box--chapter { padding: 0 7vw; }
+  /* Each scroll panel is taller than the viewport on mobile, and the
+     card itself sits in the lower half so the reader sees the map
+     above the card while reading. That gives the breathing room
+     between panels the user asked for. */
+  .scrolly__box {
+    padding: 0 4vw;
+    align-items: flex-end;
+    justify-content: flex-start;
+    min-height: 140vh;
+    padding-bottom: 12vh;
+  }
+  .scrolly__box--chapter {
+    padding: 0 7vw;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding-bottom: 0;
+  }
   .scrolly__chapter h2 { font-size: 2.4rem; }
   .scrolly__chapter p { font-size: 1.08rem; }
   .step-charts__row { gap: 12px; }
