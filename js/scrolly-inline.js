@@ -56,7 +56,7 @@ const STEPS = [
   // 19 — Vlaanderen amper rood.
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: [], dim: ["BE_"], countryHighlight: null },
   // 20 — Contrast met grote buurlanden (zoom uit, no dim).
-  { yearA: 2001, yearB: 2024, center: [6, 49.5], zoom: 5.8, highlight: [], dim: null, countryHighlight: null, transition: "jump" },
+  { yearA: 2001, yearB: 2024, center: [6, 49.5], zoom: 5.8, highlight: [], dim: ["FR_", "BE_", "DE_"], countryHighlight: null },
 ];
 
 const PROTOMAPS_KEY = "d3b78e1318dd7bcb";
@@ -381,9 +381,9 @@ export async function initScrollyInline(options = {}) {
           type: "FeatureCollection",
           features: [
             { type: "Feature", properties: {}, geometry: { type: "LineString",
-              coordinates: [[4.72, 49.77], [3.30, 47.80], [1.40, 45.50], [-0.30, 43.50]] } },
+              coordinates: [[4.72, 49.77], [3.20, 47.80], [0.8, 47.50], [-0.50, 43.50]] } },
             { type: "Feature", properties: {}, geometry: { type: "LineString",
-              coordinates: [[5.60, 48.20], [4.20, 46.80], [2.80, 44.80], [1.50, 42.90]] } },
+              coordinates: [[6.0, 49.20], [4.20, 46.80], [4.40, 44.80], [1.50, 42.90]] } },
           ],
         },
       });
