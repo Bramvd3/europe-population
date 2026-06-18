@@ -10,12 +10,30 @@ const scrollyController = await initScrollyInline({
   legendElement: document.getElementById("scrolly-card-legend"),
 });
 
-  let lastSentStep = -1;
-  function sendStep(index) {
-    if (index === lastSentStep) return;
-    lastSentStep = index;
-    scrollyController.applyStep(index);
-  }
+// Step dispatcher with a small debounce so fast scrolling skips the
+// intermediate steps and only the final one in view actually triggers
+// applyStep. Without this, each panel that flashed across the trigger
+// zone would queue its own flyTo / filter updates — fine when scrolling
+// slowly, but a noticeable 'catching-up' delay when scrolling fast.
+//
+// 100 ms is long enough to coalesce a fast-scroll burst (typical
+// scroll bursts are < 50 ms between IntersectionObserver events), short
+// enough to feel instantaneous when reading panel-by-panel.
+const STEP_DEBOUNCE_MS = 100;
+let lastAppliedStep = -1;
+let pendingStep = -1;
+let pendingTimer = null;
+
+function sendStep(index) {
+  pendingStep = index;
+  if (pendingTimer) clearTimeout(pendingTimer);
+  pendingTimer = window.setTimeout(() => {
+    pendingTimer = null;
+    if (pendingStep === lastAppliedStep) return;
+    lastAppliedStep = pendingStep;
+    scrollyController.applyStep(pendingStep);
+  }, STEP_DEBOUNCE_MS);
+}
 
 const observer = new IntersectionObserver((entries) => {
   for (const entry of entries) {
