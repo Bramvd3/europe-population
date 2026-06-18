@@ -919,6 +919,51 @@ a:hover {
     width: auto;
   }
   .interactive-inline__period [data-role="year-slider"] { margin: 18px 8px 32px; }
+
+  /* Search starts collapsed as a 40×40 circle below the slider so the
+     period panel + circle both fit on a narrow screen. Click the circle
+     to expand the input to full width (right edge anchored to the
+     viewport edge). */
+  .interactive-inline__search {
+    top: auto;
+    left: 8px;
+    right: auto;
+    /* Sits just below the period panel's typical height on mobile. */
+    margin-top: 0;
+    width: 40px;
+    transform: translateY(124px);
+  }
+  .interactive-inline__search .search-input-wrap {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    overflow: hidden;
+    transition: width 0.2s ease, border-radius 0.2s ease,
+                padding 0.2s ease;
+  }
+  .interactive-inline__search .search-input-wrap .search-icon { margin: 0; }
+  .interactive-inline__search .search-input-wrap input { display: none; }
+
+  /* Expanded — input visible, panel spans the viewport width. */
+  .interactive-inline__search.is-expanded { width: calc(100vw - 16px); }
+  .interactive-inline__search.is-expanded .search-input-wrap {
+    width: 100%;
+    padding: 0 12px;
+    justify-content: flex-start;
+    border-radius: 10px;
+    cursor: text;
+  }
+  .interactive-inline__search.is-expanded .search-input-wrap .search-icon {
+    margin-right: 8px;
+  }
+  .interactive-inline__search.is-expanded .search-input-wrap input {
+    display: block;
+  }
+  .interactive-inline__search .search-results { font-size: 1rem; }
+
   .interactive-inline__chart-wrap {
     left: 8px;
     right: 8px;

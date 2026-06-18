@@ -300,10 +300,35 @@ export async function initInteractiveInline(options = {}) {
       return;
     }
 
+    // Mobile-collapsible behaviour: the search container starts as a
+    // 40×40 magnifying-glass circle. Tap it → .is-expanded class flips
+    // it to a full-width input. Desktop CSS ignores the class — the
+    // input is always visible there.
+    const searchPanelEl = root.querySelector(".interactive-inline__search");
+    const searchWrapEl = root.querySelector(".search-input-wrap");
+
+    function expand() {
+      searchPanelEl?.classList.add("is-expanded");
+      window.setTimeout(() => searchInputEl.focus(), 50);
+    }
+    function collapse() {
+      searchPanelEl?.classList.remove("is-expanded");
+    }
     function close() {
       searchResultsEl.hidden = true;
       searchResultsEl.innerHTML = "";
     }
+
+    // Tap on the wrap (icon area, NOT on the input itself) opens the
+    // expanded state on mobile. On desktop this is a no-op visually
+    // since the input was already showing.
+    searchWrapEl?.addEventListener("click", (e) => {
+      if (e.target === searchInputEl) return;
+      if (!searchPanelEl?.classList.contains("is-expanded")) {
+        expand();
+        e.stopPropagation();
+      }
+    });
     function render(query) {
       const q = query.trim().toLowerCase();
       if (q.length < 2) { close(); return; }
@@ -344,6 +369,7 @@ export async function initInteractiveInline(options = {}) {
       const lat = parseFloat(li.dataset.lat);
       searchInputEl.value = li.textContent;
       close();
+      collapse();   // collapse back to circle on mobile after selection
       // Fly in, then pin + show the popup once tiles for the gemeente
       // are loaded. Position the popup near the centroid pixel.
       map.flyTo({ center: [lon, lat], zoom: 10, essential: true, speed: 0.9 });
@@ -357,9 +383,12 @@ export async function initInteractiveInline(options = {}) {
       // Wait for the flyTo to settle so querySourceFeatures has tiles.
       map.once("moveend", reveal);
     });
-    // Clicking outside the search panel closes the dropdown.
+    // Clicking outside the whole search panel closes the dropdown AND
+    // collapses back to the icon-circle on mobile.
     document.addEventListener("click", (e) => {
-      if (!searchResultsEl.contains(e.target) && e.target !== searchInputEl) close();
+      if (searchPanelEl?.contains(e.target)) return;
+      close();
+      collapse();
     });
   }
 
@@ -373,12 +402,21 @@ export async function initInteractiveInline(options = {}) {
       }
       if (map.getLayer("water")) map.setPaintProperty("water", "fill-color", "#dbe9f4");
       if (map.getLayer("places_country")) map.setPaintProperty("places_country", "text-color", "#5c5c5c");
+      // Push city / hamlet labels later than Protomaps' defaults. Wrap
+      // in try/catch — MapLibre 4.7 throws a ValidationError on this
+      // expression for some Protomaps theme versions; we don't want
+      // that to kill the rest of the load handler (which sets up the
+      // year-slider, search box and popup interactions).
       const LABEL_DELAY = 4;
       ["places_locality", "places_subplace", "places_region"].forEach((id) => {
         if (!map.getLayer(id)) return;
-        const existing = map.getFilter(id) ?? ["all"];
-        const stricter = [">=", ["zoom"], ["+", ["coalesce", ["get", "min_zoom"], 0], LABEL_DELAY]];
-        map.setFilter(id, ["all", existing, stricter]);
+        try {
+          const existing = map.getFilter(id) ?? ["all"];
+          const stricter = [">=", ["zoom"], ["+", ["coalesce", ["get", "min_zoom"], 0], LABEL_DELAY]];
+          map.setFilter(id, ["all", existing, stricter]);
+        } catch (err) {
+          // Validation failure — leave the layer at Protomaps' defaults.
+        }
       });
       map.addSource("lau", { type: "vector", url: "pmtiles://data/lau-scrolly.pmtiles" });
       const beforeId = borderLayerId ?? undefined;
