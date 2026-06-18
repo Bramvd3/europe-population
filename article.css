@@ -471,6 +471,10 @@ a:hover {
   padding: 0 5vw;
   pointer-events: none;
 }
+.scrolly__lead-in {
+  min-height: 100vh;
+  pointer-events: none;
+}
 .scrolly__box--chapter {
   justify-content: center;
   padding: 0 8vw;
