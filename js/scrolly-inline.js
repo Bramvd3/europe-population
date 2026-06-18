@@ -149,8 +149,12 @@ const STEPS = [
   { yearA: 1961, yearB: 2024, center: [10.5, 51], zoom: 5.4, highlight: [], dim: ["DE_"], countryHighlight: null },
 ];
 
-const PROTOMAPS_KEY = "d3b78e1318dd7bcb";
+// Self-hosted Protomaps basemap. The PMTiles file lives at
+// /protomaps-basemap/global-basemap.pmtiles on the SFTP-served host.
+// Absolute server-relative URL (three slashes after pmtiles:) so the
+// same string resolves correctly from /, /scrolly/ and /map/.
 const PROTOMAPS_FLAVOR = "white";
+const BASEMAP_URL = "pmtiles:///protomaps-basemap/global-basemap.pmtiles";
 
 function buildProtomapsStyle() {
   return {
@@ -160,7 +164,7 @@ function buildProtomapsStyle() {
     sources: {
       protomaps: {
         type: "vector",
-        url: `https://api.protomaps.com/tiles/v4.json?key=${PROTOMAPS_KEY}`,
+        url: BASEMAP_URL,
       },
     },
     layers: protomaps_themes_base.default("protomaps", PROTOMAPS_FLAVOR, "nl"),

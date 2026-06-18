@@ -4,8 +4,10 @@ const PCT_BINS = [-75, -50, -25, -10, 0, 10, 25, 50, 75];
 const ABS_BINS = [-20000, -10000, -5000, -1000, 0, 1000, 5000, 10000, 20000];
 const COLORS = ["#E62323", "#FF4944", "#FF7882", "#FFBFC3", "#FFF2F6", "#EEF7EE", "#C3F0C7", "#6DE19B", "#3ECF6E", "#21891F"];
 const NO_DATA_COLOR = "rgba(0,0,0,0)";
-const PROTOMAPS_KEY = "d3b78e1318dd7bcb";
+// Self-hosted Protomaps basemap. The PMTiles file lives at
+// /protomaps-basemap/global-basemap.pmtiles on the SFTP-served host.
 const PROTOMAPS_FLAVOR = "white";
+const BASEMAP_URL = "pmtiles:///protomaps-basemap/global-basemap.pmtiles";
 
 function formatAbsLabel(v) {
   const sign = v > 0 ? "+" : (v < 0 ? "−" : "");
@@ -40,7 +42,7 @@ function buildProtomapsStyle() {
     version: 8,
     glyphs: "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf",
     sprite: `https://protomaps.github.io/basemaps-assets/sprites/v4/${PROTOMAPS_FLAVOR}`,
-    sources: { protomaps: { type: "vector", url: `https://api.protomaps.com/tiles/v4.json?key=${PROTOMAPS_KEY}` } },
+    sources: { protomaps: { type: "vector", url: BASEMAP_URL } },
     layers: protomaps_themes_base.default("protomaps", PROTOMAPS_FLAVOR, "nl"),
   };
 }
