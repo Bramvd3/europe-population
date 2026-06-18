@@ -54,9 +54,10 @@ export async function initInteractiveInline(options = {}) {
   const chartPanelEl = root.querySelector("[data-role='chart-panel']");
   const infoSentenceEl = root.querySelector("[data-role='info-sentence']");
   const popupChartEl = root.querySelector("[data-role='popup-chart']");
-  const closeButtonEl = root.querySelector("[data-role='close-button']");
   const legendEl = root.querySelector("[data-role='legend']");
-  if (!mapEl || !yearSliderEl || !periodTitleEl || !chartPanelEl || !infoSentenceEl || !popupChartEl || !closeButtonEl || !legendEl) {
+  const searchInputEl = root.querySelector("[data-role='search-input']");
+  const searchResultsEl = root.querySelector("[data-role='search-results']");
+  if (!mapEl || !yearSliderEl || !periodTitleEl || !chartPanelEl || !infoSentenceEl || !popupChartEl || !legendEl) {
     throw new Error("Interactive inline markup is incomplete.");
   }
 
@@ -97,6 +98,26 @@ export async function initInteractiveInline(options = {}) {
   function setPopupShown(shown) {
     chartPanelEl.style.display = shown ? "block" : "none";
     root.classList.toggle("popup-open", shown);
+  }
+
+  // Move the popup to a pixel position on the map (relative to the
+  // map container), with a small offset so it doesn't sit ON the
+  // cursor. Flips left/up if the popup would clip off the right or
+  // bottom edge of the map.
+  function positionPopupAt(px, py) {
+    if (!chartPanelEl) return;
+    const w = chartPanelEl.offsetWidth || 460;
+    const h = chartPanelEl.offsetHeight || 200;
+    const mapRect = mapEl.getBoundingClientRect();
+    const gap = 14;
+    let x = px + gap;
+    let y = py + gap;
+    if (x + w > mapRect.width - 8) x = px - w - gap;
+    if (y + h > mapRect.height - 8) y = py - h - gap;
+    if (x < 8) x = 8;
+    if (y < 8) y = 8;
+    chartPanelEl.style.left = x + "px";
+    chartPanelEl.style.top = y + "px";
   }
 
   function renderTrendChart(series) {
@@ -219,12 +240,20 @@ export async function initInteractiveInline(options = {}) {
       if (!e.features || e.features.length === 0) return;
       const f = e.features[0];
       const id = f.id;
-      if (id === hoveredId) return;
-      if (hoveredId != null) map.setFeatureState({ source: "lau", sourceLayer: "lau", id: hoveredId }, { hover: false });
-      hoveredId = id;
-      map.setFeatureState({ source: "lau", sourceLayer: "lau", id }, { hover: true });
+      // Hover-state bookkeeping: only swap the dark outline if the
+      // underlying LAU changed.
+      if (id !== hoveredId) {
+        if (hoveredId != null) map.setFeatureState({ source: "lau", sourceLayer: "lau", id: hoveredId }, { hover: false });
+        hoveredId = id;
+        map.setFeatureState({ source: "lau", sourceLayer: "lau", id }, { hover: true });
+      }
       map.getCanvas().style.cursor = "pointer";
-      if (pinnedId == null) showPopup(f);
+      // Popup follows the cursor while not pinned — and refreshes its
+      // chart whenever the underlying LAU changes.
+      if (pinnedId == null) {
+        positionPopupAt(e.point.x, e.point.y);
+        showPopup(f);
+      }
     });
     map.on("mouseleave", "lau-fill", () => {
       if (hoveredId != null) {
@@ -237,13 +266,100 @@ export async function initInteractiveInline(options = {}) {
     map.on("click", "lau-fill", (e) => {
       if (!e.features || e.features.length === 0) return;
       pinnedId = e.features[0].id;
+      positionPopupAt(e.point.x, e.point.y);
       showPopup(e.features[0]);
     });
     setupYearSlider();
-    closeButtonEl.addEventListener("click", (e) => {
-      e.preventDefault();
+
+    // The whole popup is its own close button — clicking anywhere on
+    // it unpins and hides. We stopPropagation so the click doesn't
+    // bubble through to the LAU underneath (which would immediately
+    // re-pin and re-show).
+    chartPanelEl.addEventListener("click", (e) => {
+      e.stopPropagation();
       pinnedId = null;
       setPopupShown(false);
+    });
+
+    setupSearch();
+  }
+
+  // ---- Search box -------------------------------------------------------
+  // Loads the 36 KB be-search.json once, then on every keystroke filters
+  // by substring against gemeente names. Result-click flies the map to
+  // the centroid, pins it, and shows the popup.
+  let searchIndex = [];
+
+  async function setupSearch() {
+    if (!searchInputEl || !searchResultsEl) return;
+    try {
+      const res = await fetch("data/be-search.json", { cache: "force-cache" });
+      if (res.ok) searchIndex = await res.json();
+    } catch (err) {
+      console.warn("be-search.json failed to load:", err);
+      return;
+    }
+
+    function close() {
+      searchResultsEl.hidden = true;
+      searchResultsEl.innerHTML = "";
+    }
+    function render(query) {
+      const q = query.trim().toLowerCase();
+      if (q.length < 2) { close(); return; }
+      // Prefer prefix matches, then substring matches.
+      const prefix = [];
+      const substr = [];
+      for (const r of searchIndex) {
+        const n = r.name.toLowerCase();
+        if (n.startsWith(q)) prefix.push(r);
+        else if (n.includes(q)) substr.push(r);
+        if (prefix.length >= 8) break;
+      }
+      const hits = prefix.concat(substr).slice(0, 8);
+      if (!hits.length) { close(); return; }
+      searchResultsEl.innerHTML = hits
+        .map((r) => `<li role="option" data-gisco="${r.id}" data-lon="${r.lon}" data-lat="${r.lat}">${r.name}</li>`)
+        .join("");
+      searchResultsEl.hidden = false;
+    }
+
+    searchInputEl.addEventListener("input", (e) => render(e.target.value));
+    searchInputEl.addEventListener("focus", (e) => render(e.target.value));
+    // Pressing Enter selects the top result (so users can type +
+    // Enter without using the mouse).
+    searchInputEl.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { searchInputEl.value = ""; close(); return; }
+      if (e.key === "Enter") {
+        const first = searchResultsEl.querySelector("li");
+        if (first) first.click();
+        e.preventDefault();
+      }
+    });
+    searchResultsEl.addEventListener("click", (e) => {
+      const li = e.target.closest("li[data-gisco]");
+      if (!li) return;
+      const gisco = li.dataset.gisco;
+      const lon = parseFloat(li.dataset.lon);
+      const lat = parseFloat(li.dataset.lat);
+      searchInputEl.value = li.textContent;
+      close();
+      // Fly in, then pin + show the popup once tiles for the gemeente
+      // are loaded. Position the popup near the centroid pixel.
+      map.flyTo({ center: [lon, lat], zoom: 10, essential: true, speed: 0.9 });
+      const reveal = () => {
+        const px = map.project([lon, lat]);
+        pinnedId = null;             // clear previous pin (showPopup will re-pin)
+        positionPopupAt(px.x, px.y);
+        showPopup(gisco);
+        pinnedId = gisco;
+      };
+      // Wait for the flyTo to settle so querySourceFeatures has tiles.
+      map.once("moveend", reveal);
+    });
+    // Clicking outside the search panel closes the dropdown.
+    document.addEventListener("click", (e) => {
+      if (!searchResultsEl.contains(e.target) && e.target !== searchInputEl) close();
     });
   }
 

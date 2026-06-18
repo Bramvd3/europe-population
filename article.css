@@ -654,27 +654,95 @@ a:hover {
 .interactive-inline__period [data-role="year-slider"] {
   margin: 22px 12px 38px;
 }
-.interactive-inline__chart-wrap {
+/* Search box — minimalist VRT-style input + magnifying glass, sits
+   directly to the right of the period panel in the top-left area. */
+.interactive-inline__search {
   position: absolute;
-  bottom: 12px;
-  left: 12px;
+  top: 12px;
+  left: 344px;             /* period panel is 320px wide + 12px gap */
   z-index: 5;
-  max-width: 500px;
+  width: 240px;
 }
-.interactive-inline [data-role="chart-panel"] {
-  width: 460px;
+.search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(3, 16, 55, 0.15);
+  padding: 0 12px;
+  height: 40px;
 }
-.interactive-inline [data-role="close-button"] {
-  position: absolute;
-  top: -6px;
-  right: -4px;
-  font-size: 20px;
+.search-input-wrap .search-icon {
+  flex: 0 0 auto;
   color: var(--ink-soft);
-  cursor: pointer;
-  text-decoration: none;
-  line-height: 1;
+  margin-right: 8px;
 }
-.interactive-inline [data-role="close-button"]:hover { color: var(--vrt-accent); }
+.search-input-wrap input {
+  flex: 1 1 auto;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-family: "Roobert", Helvetica, Arial, sans-serif;
+  font-size: 0.95rem;
+  color: var(--ink);
+  min-width: 0;
+}
+.search-input-wrap input::placeholder {
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+.search-input-wrap input:focus { outline: 0; }
+.search-results {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 4px 0;
+  max-height: 320px;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(3, 16, 55, 0.18);
+  font-size: 0.92rem;
+}
+.search-results li {
+  padding: 8px 14px;
+  color: var(--ink);
+  cursor: pointer;
+  line-height: 1.2;
+}
+.search-results li:hover,
+.search-results li:focus {
+  background: rgba(85, 65, 240, 0.10);
+  color: var(--vrt-accent);
+}
+
+/* Chart panel — now positioned by JS (top/left set inline as the cursor
+   moves over the LAU layer). The whole panel is clickable to dismiss. */
+.interactive-inline__chart {
+  position: absolute;
+  /* top/left set dynamically by JS */
+  z-index: 6;
+  width: 460px;
+  max-width: calc(100% - 24px);
+  cursor: pointer;
+  user-select: none;
+}
+.interactive-inline__chart::after {
+  /* Subtle hint that the whole panel is clickable to close. */
+  content: "klik om te sluiten";
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--ink-soft);
+  text-align: right;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.7;
+}
 .interactive-inline [data-role="popup-chart"] svg {
   display: block;
   width: 100%;

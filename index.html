@@ -445,14 +445,29 @@
             <label><input type="radio" name="mode" value="abs"> Δ bevolking</label>
           </div>
         </div>
-        <div class="interactive-inline__chart-wrap">
-          <div data-role="chart-panel" class="map-overlay-element" style="display: none;">
-            <div class="interactive-inline__popup">
-              <a data-role="close-button">×</a>
-              <p class="info-sentence" data-role="info-sentence"></p>
-              <div data-role="popup-chart"></div>
-            </div>
+        <!-- Search box positioned right next to the period panel; lets
+             the reader type a Belgian gemeente and jump straight to its
+             population chart. Index loaded from data/be-search.json. -->
+        <div class="interactive-inline__search">
+          <div class="search-input-wrap">
+            <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path d="M10.5 4.5a6 6 0 1 1 0 12 6 6 0 0 1 0-12zm0 0M16.5 16.5l3.5 3.5" fill="none"
+                stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input
+              type="text"
+              data-role="search-input"
+              placeholder="Zoek je gemeente"
+              autocomplete="off"
+              spellcheck="false">
           </div>
+          <ul data-role="search-results" class="search-results" hidden></ul>
+        </div>
+        <!-- chart-panel is positioned by JS (follows mouse on hover, sticks
+             on click). Clicking the panel itself closes it. -->
+        <div data-role="chart-panel" class="interactive-inline__chart map-overlay-element" style="display: none;">
+          <p class="info-sentence" data-role="info-sentence"></p>
+          <div data-role="popup-chart"></div>
         </div>
         <div class="interactive-inline__legend-wrap">
           <div class="map-overlay-element">
