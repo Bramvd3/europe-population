@@ -26,7 +26,7 @@ const STEPS = [
   // 4 — España Vaciada: focus Iberian only.
   { yearA: 1961, yearB: 2024, center: [-3.8, 40.5], zoom: 5.3, highlight: [], dim: ["FR_", "ES_", "PT_"], countryHighlight: null },
   // 5 — Emigratie uit Oost-Europa: focus RO + BG + EL.
-  { yearA: 1961, yearB: 2024, center: [25, 43], zoom: 5.0, highlight: [], dim: ["RO_", "BG_", "EL_"], countryHighlight: null, transition: "jump" },
+  { yearA: 1961, yearB: 2024, center: [25, 43], zoom: 5.0, highlight: [], dim: ["RO_", "BG_", "EL_"], countryHighlight: null },
   // 6 — Chapter: Terug naar België.
   { yearA: 1961, yearB: 2001, center: [4.6, 50.7], zoom: 6.5, highlight: [], dim: null, countryHighlight: null, chapter: true },
   // 7 — Leegloop van de steden (5 grote BE steden highlighted).
@@ -44,11 +44,11 @@ const STEPS = [
   // 13 — Chapter: De 21e eeuw.
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 6.5, highlight: [], dim: null, countryHighlight: null, chapter: true },
   // 14 — Steden groeien terug (BE focus).
-  { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: [], dim: ["BE_"], countryHighlight: null },
+  { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
   // 15 — De knik in elke grafiek (5 cities highlighted + 3 in-card charts).
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null, multiPopup: THREE_BIG },
   // 16 — Brussel +50% (same focus as 15).
-  { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
+  { yearA: 2001, yearB: 2024, center: [4.4, 50.85], zoom: 9.0, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
   // 17 — Luxemburgse grens (ontdim BE + Groothertogdom).
   { yearA: 2001, yearB: 2024, center: [5.85, 49.83], zoom: 8.5, highlight: [], dim: ["BE_", "LU_"], countryHighlight: "LUX" },
   // 18 — Westhoek (2001-2024).
