@@ -5,57 +5,64 @@ const COLORS = ["#d46780", "#df91a3", "#e8acb3", "#f0c6c3", "#f7e1d4", "#e7e7c3"
 const NO_DATA_COLOR = "rgba(0,0,0,0)";
 
 const BIG_CITIES = ["BE_44021", "BE_11002", "BE_21004", "BE_62063", "BE_52011"];
-const THREE_BIG = ["BE_11002", "BE_44021", "BE_21004"];
-// Aalst, Wetteren, Mechelen, Tienen — best-guess gisco_ids (BE_NIS codes).
+// Mechelen, Aalst, Ninove, Tienen — used to highlight in step 19.
+const FOUR_NEAR_BRUSSELS = ["BE_12025", "BE_41002", "BE_41048", "BE_24107"];
+// Aalst, Wetteren, Mechelen, Tienen — small Flemish cities (step 10).
 const FOUR_SMALLER = ["BE_41002", "BE_42025", "BE_12025", "BE_24107"];
 
-// `dim` is now an array of country-code prefixes to KEEP visible (rest is
+// `dim` is an array of country-code prefixes to KEEP visible (rest is
 // dimmed). null / empty array = no dim. ['BE_'] = only Belgium kept;
 // ['FR_','ES_','PT_'] = France + Iberian peninsula stay coloured, rest fades.
 // Steps with `chapter: true` are full-screen chapter dividers — the map
 // just holds whatever state the previous step left it in (smooth pause).
 const STEPS = [
-  // 0 — Europe overview, introduces the colour legend.
+  // 0 — Europa in beweging: Europe overview, intro + legend.
   { yearA: 1961, yearB: 2024, center: [10, 52], zoom: 4.5, highlight: [], dim: null, countryHighlight: null },
-  // 1 — Chapter: 2 Grote Europese trends.
+  // 1 — Chapter: 2 grote Europese trends.
   { yearA: 1961, yearB: 2024, center: [10, 52], zoom: 4.5, highlight: [], dim: null, countryHighlight: null, chapter: true },
-  // 2 — Aantrekkingspolen: focus France + Iberian.
-  { yearA: 1961, yearB: 2024, center: [0, 45], zoom: 4.7, highlight: [], dim: ["FR_", "ES_", "PT_"], countryHighlight: null },
-  // 3 — Diagonale du vide: focus France, two dashed VRT-purple lines bound the band.
-  { yearA: 1961, yearB: 2024, center: [2.5, 46.5], zoom: 5.2, highlight: [], dim: ["FR_", "ES_", "PT_"], countryHighlight: null, showDiagonal: true },
-  // 4 — España Vaciada: focus Iberian only.
-  { yearA: 1961, yearB: 2024, center: [-3.8, 40.5], zoom: 5.3, highlight: [], dim: ["FR_", "ES_", "PT_"], countryHighlight: null },
-  // 5 — Emigratie uit Oost-Europa: focus RO + BG + EL.
-  { yearA: 1961, yearB: 2024, center: [25, 43], zoom: 5.0, highlight: [], dim: ["RO_", "BG_", "EL_"], countryHighlight: null },
-  // 6 — Chapter: Terug naar België.
+  // 2 — Aantrekkingspolen: heel Europa, no dim (groene eilanden in het rood).
+  { yearA: 1961, yearB: 2024, center: [10, 50], zoom: 4.3, highlight: [], dim: null, countryHighlight: null },
+  // 3 — Heel Europa / Iberisch Schiereiland: focus Spain + Portugal.
+  { yearA: 1961, yearB: 2024, center: [-3.8, 40.5], zoom: 5.3, highlight: [], dim: ["ES_", "PT_", "FR_"], countryHighlight: null },
+  // 4 — Frankrijk + diagonale du vide.
+  { yearA: 1961, yearB: 2024, center: [2.5, 46.5], zoom: 5.2, highlight: [], dim: ["ES_", "PT_", "FR_"], countryHighlight: null, showDiagonal: true },
+  // 5 — Emigratie uit Oost-Europa: focus RO + BG + Baltische staten.
+  { yearA: 1961, yearB: 2024, center: [25, 43], zoom: 5.0, highlight: [], dim: ["RO_", "BG_"], countryHighlight: null },
+  // 6 — Noordwest-Europa / Benelux + Denemarken + West-Duitsland.
+  { yearA: 1961, yearB: 2024, center: [3, 52], zoom: 4.8, highlight: [], dim: ["BE_", "NL_", "LU_", "DK_", "DE_", "UK", "IE_"], countryHighlight: null },
+  // 7 — Duitsland (oost/west demografische scheidslijn).
+  { yearA: 1961, yearB: 2024, center: [10.5, 51], zoom: 5.4, highlight: [], dim: ["DE_"], countryHighlight: null },
+  // 8 — Chapter: Terug naar België (period switches to 1961-2001).
   { yearA: 1961, yearB: 2001, center: [4.6, 50.7], zoom: 6.5, highlight: [], dim: null, countryHighlight: null, chapter: true },
-  // 7 — Leegloop van de steden (5 grote BE steden highlighted).
+  // 9 — De stadsvlucht (5 grote BE steden highlighted).
   { yearA: 1961, yearB: 2001, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
-  // 8 — Aalst, Wetteren, Mechelen, Tienen.
+  // 10 — Aalst / Wetteren / Mechelen / Tienen.
   { yearA: 1961, yearB: 2001, center: [4.4, 50.95], zoom: 8.5, highlight: FOUR_SMALLER, dim: ["BE_"], countryHighlight: null },
-  // 9 — Randgemeenten rond Brussel.
+  // 11 — Brusselaars trekken naar de rand (focus Brussel + chart BRU+LLN).
   { yearA: 1961, yearB: 2001, center: [4.4, 50.85], zoom: 9.0, highlight: [], dim: ["BE_"], countryHighlight: null },
-  // 10 — Antwerpen + omliggende gemeenten.
+  // 12 — Hetzelfde verhaal in Antwerpen.
   { yearA: 1961, yearB: 2001, center: [4.7, 51.2], zoom: 9.5, highlight: [], dim: ["BE_"], countryHighlight: null },
-  // 11 — Limburg.
+  // 13 — Limburg is een geval apart (focus Limburg + chart Houthalen-Helchteren).
   { yearA: 1961, yearB: 2001, center: [5.4, 50.95], zoom: 9.0, highlight: [], dim: ["BE_"], countryHighlight: null },
-  // 12 — Westhoek (1961-2001).
-  { yearA: 1961, yearB: 2001, center: [2.85, 50.9], zoom: 9.5, highlight: [], dim: ["BE_"], countryHighlight: null },
-  // 13 — Chapter: De 21e eeuw.
+  // 14 — De krimpende Westhoek (1961-2001).
+  { yearA: 1961, yearB: 2001, center: [3.05, 50.9], zoom: 9.2, highlight: [], dim: ["BE_"], countryHighlight: null },
+  // 15 — Chapter: De 21e eeuw (period switches to 2001-2024).
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 6.5, highlight: [], dim: null, countryHighlight: null, chapter: true },
-  // 14 — Steden groeien terug (BE focus).
+  // 16 — De steden groeien terug (BE focus + 5 cities).
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
-  // 15 — De knik in elke grafiek (5 cities highlighted + 3 in-card charts).
-  { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null, multiPopup: THREE_BIG },
-  // 16 — Brussel +50% (same focus as 15).
+  // 17 — De knik in de grafiek (5 cities + 3 in-card charts).
+  { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
+  // 18 — Druk op de woningmarkt (focus Brussel).
   { yearA: 2001, yearB: 2024, center: [4.4, 50.85], zoom: 9.0, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
-  // 17 — Luxemburgse grens (ontdim BE + Groothertogdom).
+  // 19 — Steden rond Brussel (Mechelen/Aalst/Ninove/Tienen highlighted).
+  { yearA: 2001, yearB: 2024, center: [4.4, 50.85], zoom: 9.0, highlight: FOUR_NEAR_BRUSSELS, dim: ["BE_"], countryHighlight: null },
+  // 20 — De allersnelste groeiers (Luxemburgse grens).
   { yearA: 2001, yearB: 2024, center: [5.85, 49.83], zoom: 8.5, highlight: [], dim: ["BE_", "LU_"], countryHighlight: "LUX" },
-  // 18 — Westhoek (2001-2024).
+  // 21 — De Westhoek volgt het Europees patroon.
   { yearA: 2001, yearB: 2024, center: [2.85, 50.9], zoom: 9.5, highlight: [], dim: ["BE_"], countryHighlight: null },
-  // 19 — Vlaanderen amper rood.
+  // 22 — De bevolking groeit bijna overal (focus BE).
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: [], dim: ["BE_"], countryHighlight: null },
-  // 20 — Contrast met grote buurlanden (zoom uit, no dim).
+  // 23 — Contrast met Frankrijk en Duitsland (zoom uit, ontdim FR/BE/DE).
   { yearA: 2001, yearB: 2024, center: [6, 49.5], zoom: 5.8, highlight: [], dim: ["FR_", "BE_", "DE_"], countryHighlight: null },
 ];
 
@@ -122,6 +129,13 @@ export async function initScrollyInline(options = {}) {
 
   const protocol = new pmtiles.Protocol();
   maplibregl.addProtocol("pmtiles", protocol.tile);
+  // Explicit PMTiles instance for the LAU choropleth. Sharing the same
+  // instance with the protocol means the pre-fetch and MapLibre's
+  // later tile requests share header + directory caches in-memory,
+  // not just at the HTTP layer.
+  const lauPmtilesURL = "data/lau-scrolly.pmtiles";
+  const lauStore = new pmtiles.PMTiles(lauPmtilesURL);
+  protocol.add(lauStore);
 
   let currentYearA = STEPS[0].yearA;
   let currentYearB = STEPS[0].yearB;
@@ -160,21 +174,30 @@ export async function initScrollyInline(options = {}) {
     }
   }
 
-  function getInlineChartCities(giscoIds) {
+  function getInlineChartCities(giscoIds, startYear, endYear) {
     return giscoIds.map((id) => {
       const p = getLauProperties(id);
       if (!p) return null;
       const name = (p.name || id).split(" / ")[0];
-      const series = ALL_YEARS.map((y) => ({ year: y, pop: p["pop_" + y] }))
+      const series = ALL_YEARS
+        .filter((y) => y >= startYear && y <= endYear)
+        .map((y) => ({ year: y, pop: p["pop_" + y] }))
         .filter((d) => d.pop != null && d.pop !== 0);
       return series.length ? { name, series } : null;
     }).filter(Boolean);
   }
 
-  function drawInlineCharts(cities, targetEl) {
+  function drawInlineCharts(cities, targetEl, opts) {
+    const { startYear, endYear, showKnik } = opts;
     const root = d3.select(targetEl);
     root.selectAll("*").remove();
     const rowEl = root.append("div").attr("class", "step-charts__row");
+
+    // X-axis ticks: start, end, and 2001 (only if it's a midpoint).
+    const xTicks = [startYear];
+    if (startYear < 2001 && endYear > 2001) xTicks.push(2001);
+    xTicks.push(endYear);
+
     for (const { name, series } of cities) {
       const cell = rowEl.append("div").attr("class", "step-charts__cell");
       cell.append("div").attr("class", "step-charts__name").text(name);
@@ -187,7 +210,7 @@ export async function initScrollyInline(options = {}) {
         .attr("width", "100%")
         .style("display", "block");
       const g = svg.append("g").attr("transform", `translate(${m.left},${m.top})`);
-      const x = d3.scaleLinear().domain(d3.extent(series, (d) => d.year)).range([0, iw]);
+      const x = d3.scaleLinear().domain([startYear, endYear]).range([0, iw]);
       const minPop = d3.min(series, (d) => d.pop);
       const maxPop = d3.max(series, (d) => d.pop);
       const span = Math.max(maxPop - minPop, 1);
@@ -197,13 +220,15 @@ export async function initScrollyInline(options = {}) {
       g.append("g")
         .attr("class", "chart-x-axis")
         .attr("transform", `translate(0,${ih})`)
-        .call(d3.axisBottom(x).tickValues([1961, 2001, 2024]).tickFormat(d3.format("d")).tickSizeOuter(0).tickSize(4));
-      g.append("line")
-        .attr("x1", x(2001)).attr("x2", x(2001))
-        .attr("y1", 0).attr("y2", ih)
-        .attr("stroke", "rgba(3, 16, 55, 0.25)")
-        .attr("stroke-width", 1)
-        .attr("stroke-dasharray", "2,2");
+        .call(d3.axisBottom(x).tickValues(xTicks).tickFormat(d3.format("d")).tickSizeOuter(0).tickSize(4));
+      if (showKnik) {
+        g.append("line")
+          .attr("x1", x(2001)).attr("x2", x(2001))
+          .attr("y1", 0).attr("y2", ih)
+          .attr("stroke", "rgba(3, 16, 55, 0.25)")
+          .attr("stroke-width", 1)
+          .attr("stroke-dasharray", "2,2");
+      }
       const line = d3.line().x((d) => x(d.year)).y((d) => y(d.pop)).curve(d3.curveMonotoneX);
       g.append("path")
         .datum(series)
@@ -213,18 +238,22 @@ export async function initScrollyInline(options = {}) {
         .attr("stroke-linecap", "round")
         .attr("stroke-linejoin", "round")
         .attr("d", line);
+
       const markers = [
         { point: series[0], anchor: "start", dx: 5, dy: 4, className: "chart-value-label" },
-        { point: series.find((d) => d.year === 2001), anchor: "middle", dx: 0, dy: -7, className: "chart-value-label chart-value-label--turn" },
-        { point: series[series.length - 1], anchor: "end", dx: -5, dy: 4, className: "chart-value-label" },
-      ].filter((marker) => marker.point);
+      ];
+      if (showKnik) {
+        const knik = series.find((d) => d.year === 2001);
+        if (knik) markers.push({ point: knik, anchor: "middle", dx: 0, dy: -7, className: "chart-value-label chart-value-label--turn", isKnik: true });
+      }
+      markers.push({ point: series[series.length - 1], anchor: "end", dx: -5, dy: 4, className: "chart-value-label" });
 
-      for (const { point, anchor, dx, dy, className } of markers) {
+      for (const { point, anchor, dx, dy, className, isKnik } of markers.filter((m) => m.point)) {
         g.append("circle")
           .attr("cx", x(point.year))
           .attr("cy", y(point.pop))
-          .attr("r", point.year === 2001 ? 4.6 : 3.6)
-          .attr("fill", point.year === 2001 ? "#d46780" : "#5541F0")
+          .attr("r", isKnik ? 4.6 : 3.6)
+          .attr("fill", isKnik ? "#d46780" : "#5541F0")
           .attr("stroke", "#fff")
           .attr("stroke-width", 1.4);
         g.append("text")
@@ -238,37 +267,42 @@ export async function initScrollyInline(options = {}) {
     targetEl.dataset.chartsRendered = "true";
   }
 
-  function scheduleInlineCharts(giscoIds, targetEl, attempt = 0) {
+  function readChartConfig(targetEl) {
+    const ids = (targetEl.dataset.ids || "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const startYear = targetEl.dataset.start ? +targetEl.dataset.start : 1961;
+    const endYear = targetEl.dataset.end ? +targetEl.dataset.end : 2024;
+    const showKnik = targetEl.dataset.knik === "true";
+    return { ids, startYear, endYear, showKnik };
+  }
+
+  function scheduleInlineCharts(targetEl, attempt = 0) {
     if (!targetEl) return;
     if (targetEl.dataset.chartsRendered === "true") return;
+    const cfg = readChartConfig(targetEl);
+    if (!cfg.ids.length) return;
     cancelInlineChartRender(targetEl);
     const timer = window.setTimeout(() => {
       inlineChartTimers.delete(targetEl);
-
-      const cities = getInlineChartCities(giscoIds);
-      if (cities.length < giscoIds.length && attempt < 20) {
-        scheduleInlineCharts(giscoIds, targetEl, attempt + 1);
+      const cities = getInlineChartCities(cfg.ids, cfg.startYear, cfg.endYear);
+      if (cities.length < cfg.ids.length && attempt < 20) {
+        scheduleInlineCharts(targetEl, attempt + 1);
         return;
       }
-      if (cities.length) drawInlineCharts(cities, targetEl);
+      if (cities.length) drawInlineCharts(cities, targetEl, cfg);
     }, attempt === 0 ? 100 : 200);
     inlineChartTimers.set(targetEl, timer);
   }
 
-  // Render three stacked mini line-charts inside the scrolly card. The
-  // card's body text already frames them.
-  function renderInlineCharts(giscoIds, targetEl) {
-    if (!targetEl) return;
-    scheduleInlineCharts(giscoIds, targetEl);
-  }
-
+  // Discover every .step-charts placeholder in the DOM and render a
+  // chart into each based on its data-* attributes. Driven by HTML
+  // (not STEPS config) so the same step can hold multiple charts at
+  // different positions within its card.
   function renderAllInlineCharts() {
-    STEPS.forEach((step, index) => {
-      if (!step.multiPopup) return;
-      const targetEl = document.querySelector(
-        `.scrolly__box[data-step="${index}"] .step-charts`
-      );
-      if (targetEl) renderInlineCharts(step.multiPopup, targetEl);
+    document.querySelectorAll(".step-charts").forEach((el) => {
+      scheduleInlineCharts(el);
     });
   }
 
@@ -342,12 +376,11 @@ export async function initScrollyInline(options = {}) {
     setDiagonalVisible(!!step.showDiagonal);
 
     hidePopup();
-    if (step.multiPopup) {
-      const targetEl = document.querySelector(
-        `.scrolly__box[data-step="${index}"] .step-charts`
-      );
-      if (targetEl) renderInlineCharts(step.multiPopup, targetEl);
-    }
+    // Re-trigger render for any charts inside this step's box that haven't
+    // rendered yet (their target tiles may now be loaded after the flyTo).
+    document.querySelectorAll(
+      `.scrolly__box[data-step="${index}"] .step-charts`
+    ).forEach((el) => scheduleInlineCharts(el));
   }
 
   await new Promise((resolve) => {
@@ -403,9 +436,68 @@ export async function initScrollyInline(options = {}) {
       applyStep(0);
       renderAllInlineCharts();
       map.once("idle", renderAllInlineCharts);
+      // Pre-fetch the LAU choropleth tiles for every unique scrolly
+      // step viewport while the reader is still on the hero / intro.
+      // Bytes land in the browser HTTP cache, so later flyTo()'s to
+      // Greece / Romania / etc. don't pay the cold-tile network cost.
+      window.setTimeout(prefetchStepTiles, 500);
       resolve();
     });
   });
+
+  // ---- Tile pre-fetching --------------------------------------------------
+  // Compute the slippy-tile (x, y) for a given (lon, lat) at integer zoom.
+  function lonLatToTile(lon, lat, z) {
+    const n = 1 << z;
+    const x = Math.floor((lon + 180) / 360 * n);
+    const latRad = (lat * Math.PI) / 180;
+    const y = Math.floor(
+      (1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n
+    );
+    return { x, y, n };
+  }
+
+  async function prefetchStepTiles() {
+    // De-dupe step viewports — many BE-centered steps share the same
+    // (center, zoom), no need to prefetch them more than once.
+    const seen = new Set();
+    const targets = [];
+    for (const step of STEPS) {
+      if (step.chapter) continue;  // chapter dividers don't change the view
+      const z = Math.floor(step.zoom);
+      const key = `${step.center[0].toFixed(2)},${step.center[1].toFixed(2)},${z}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      targets.push({ center: step.center, z });
+    }
+
+    // For each unique viewport, queue a 5×5 tile grid around the
+    // center. That covers a typical 1280-px desktop viewport at any
+    // of our zoom levels, and tiles outside the rendered viewport
+    // load harmlessly as no-ops.
+    const tileSet = new Set();
+    for (const { center, z } of targets) {
+      const { x: cx, y: cy, n } = lonLatToTile(center[0], center[1], z);
+      for (let dx = -2; dx <= 2; dx++) {
+        for (let dy = -2; dy <= 2; dy++) {
+          const tx = cx + dx;
+          const ty = cy + dy;
+          if (tx < 0 || ty < 0 || tx >= n || ty >= n) continue;
+          tileSet.add(`${z}/${tx}/${ty}`);
+        }
+      }
+    }
+
+    // Fire-and-forget. The pmtiles library batches Range-fetches and
+    // the browser's HTTP cache dedupes anything MapLibre already
+    // loaded for the current view. Failures are silent (Promise
+    // rejection swallowed) — a missed prefetch isn't worth bothering
+    // the reader about.
+    for (const tileKey of tileSet) {
+      const [z, x, y] = tileKey.split("/").map(Number);
+      lauStore.getZxy(z, x, y).catch(() => {});
+    }
+  }
 
   return { applyStep };
 }
