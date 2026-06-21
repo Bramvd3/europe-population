@@ -475,6 +475,10 @@ a:hover {
   min-height: 100vh;
   pointer-events: none;
 }
+.scrolly__spacer-half-screen {
+  min-height: 50vh;
+  pointer-events: none;
+}
 .scrolly__box--chapter {
   justify-content: center;
   padding: 0 8vw;
