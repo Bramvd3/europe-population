@@ -68,7 +68,7 @@
 
 /* VRT NWS utility filters — for elements that need to feel like they
    'sit above' the page (cards, popups, the hero text-container). */
-.shadow-harder { filter: drop-shadow(0 0 15px rgba(3, 16, 55, 0.9)); }
+.shadow-harder { filter: drop-shadow(0 0 50px rgba(3, 16, 55, 0.7)); }
 .shadow-hard { filter: drop-shadow(0 0 15px rgba(3, 16, 55, 0.4)); }
 .shadow      { filter: drop-shadow(0 0 15px rgba(3, 16, 55, 0.1)); }
 
@@ -427,6 +427,25 @@ summary{
   }
 }
 
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.methodology-dropdown:not([open]) p {
+  animation: slideOut 0.3s ease-in forwards;
+}
+
+.methodology-dropdown:not([open]) p + p {
+  animation-delay: 0s;
+}
+
 /* ============================================================
    SCROLLY SECTION (sticky iframe + floating text cards)
    ============================================================ */
@@ -656,9 +675,9 @@ summary{
   font-family: "Roobert", Helvetica, Arial, sans-serif;
 }
 .step-charts .chart-value-label {
-  font-size: 16px;
+  font-size: 0.8rem;
   font-weight: 600;
-  fill: var(--ink-soft);
+  fill: var(--darkvio);
   paint-order: stroke;
   font-variant-numeric: tabular-nums;
 }

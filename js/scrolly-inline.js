@@ -1,9 +1,12 @@
-/* Inline scrolly map controller for article page (no iframe messaging). */
+/* render map en graphs in scrolly */ 
+
+/* Inline scrolly map controller for article page */
 const ALL_YEARS = [1961, 1971, 1981, 1991, 2001, 2011, 2021, 2024];
 const PCT_BINS = [-75, -50, -25, -10, 0, 10, 25, 50, 75];
 const COLORS = ["#E62323", "#FF4944", "#FF7882", "#FFBFC3", "#FFF2F6", "#EEF7EE", "#C3F0C7", "#6DE19B", "#3ECF6E", "#21891F"];
 const NO_DATA_COLOR = "rgba(0,0,0,0)";
 
+// Gent, antwerpen, brussel, charleroi, luik — used to highlight in step 2. 
 const BIG_CITIES = ["BE_44021", "BE_11002", "BE_21004", "BE_62063", "BE_52011"];
 // Mechelen, Aalst, Ninove, Tienen — used to highlight in step 19.
 const FOUR_NEAR_BRUSSELS = ["BE_12025", "BE_41002", "BE_41048", "BE_24107"];
@@ -242,8 +245,8 @@ export async function initScrollyInline(options = {}) {
     for (const { name, series } of cities) {
       const cell = rowEl.append("div").attr("class", "step-charts__cell");
       cell.append("div").attr("class", "step-charts__name").text(name);
-      const W = 380, H = 164;
-      const m = { top: 28, right: 34, bottom: 30, left: 34 };
+      const W = 450, H = 194;
+      const m = { top: 28, right: 90, bottom: 30, left: 90 };
       const iw = W - m.left - m.right;
       const ih = H - m.top - m.bottom;
       const svg = cell.append("svg")
@@ -274,29 +277,25 @@ export async function initScrollyInline(options = {}) {
       g.append("path")
         .datum(series)
         .attr("fill", "none")
-        .attr("stroke", "var(--darkvio, #031037)")
-        .attr("stroke-width", 1.8)
+        .attr("stroke", "var(--basevio, #5541F0)")
+        .attr("stroke-width", 3)
         .attr("stroke-linecap", "round")
         .attr("stroke-linejoin", "round")
         .attr("d", line);
 
+      const first = series[0];
+      const last = series[series.length - 1];
       const markers = [
-        { point: series[0], anchor: "start", dx: 5, dy: 4, className: "chart-value-label" },
+        { point: first, anchor: "end", dx: -7, dy: 4, className: "chart-value-label" },
+        { point: last, anchor: "start", dx: 7, dy: 4, className: "chart-value-label" },        
       ];
       if (showKnik) {
         const knik = series.find((d) => d.year === 2001);
-        if (knik) markers.push({ point: knik, anchor: "middle", dx: 0, dy: -7, className: "chart-value-label chart-value-label--turn", isKnik: true });
+        if (knik) markers.push({ point: knik, anchor: "middle", dx: 0, dy: 25, className: "chart-value-label chart-value-label--turn", isKnik: true });
       }
-      markers.push({ point: series[series.length - 1], anchor: "end", dx: -5, dy: 4, className: "chart-value-label" });
+      markers.push();
 
       for (const { point, anchor, dx, dy, className, isKnik } of markers.filter((m) => m.point)) {
-        g.append("circle")
-          .attr("cx", x(point.year))
-          .attr("cy", y(point.pop))
-          .attr("r", isKnik ? 4.6 : 3.6)
-          .attr("fill", isKnik ? "#d46780" : "#5541F0")
-          .attr("stroke", "#fff")
-          .attr("stroke-width", 1.4);
         g.append("text")
           .attr("class", className)
           .attr("text-anchor", anchor)
@@ -442,9 +441,9 @@ export async function initScrollyInline(options = {}) {
       const beforeId = borderLayerId ?? undefined;
       map.addLayer({ id: "lau-fill", type: "fill", source: "lau", "source-layer": "lau", paint: { "fill-color": buildFillExpr(currentYearA, currentYearB), "fill-opacity": 0.85, "fill-outline-color": "rgba(255,255,255,0)" } }, beforeId);
       map.addLayer({ id: "lau-outline", type: "line", source: "lau", "source-layer": "lau", paint: { "line-color": "rgba(255,255,255,0.75)", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0, 6, 0.2, 7, 0.4, 8, 0.6] } }, beforeId);
-      map.addLayer({ id: "lau-dim", type: "fill", source: "lau", "source-layer": "lau", filter: ["!=", ["slice", ["get", "gisco_id"], 0, 3], "ZZ_"], paint: { "fill-color": "#ffffff", "fill-opacity": 0.78 }, layout: { visibility: "none" } }, beforeId);
-      map.addLayer({ id: "lau-highlight", type: "line", source: "lau", "source-layer": "lau", filter: ["in", ["get", "gisco_id"], ["literal", []]], paint: { "line-color": "#1c1c1c", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.2, 8, 2, 11, 2.5] } }, beforeId);
-      map.addLayer({ id: "country-highlight", type: "line", source: "protomaps", "source-layer": "boundaries", filter: ["all", ["<=", ["get", "kind_detail"], 2], ["==", ["get", "brk_a3"], "ZZZ"]], paint: { "line-color": "#1c1c1c", "line-width": 3 }, layout: { visibility: "none" } }, beforeId);
+      map.addLayer({ id: "lau-dim", type: "fill", source: "lau", "source-layer": "lau", filter: ["!=", ["slice", ["get", "gisco_id"], 0, 3], "ZZ_"], paint: { "fill-color": "#ffffff", "fill-opacity": 0.9 }, layout: { visibility: "none" } }, beforeId);
+      map.addLayer({ id: "lau-highlight", type: "line", source: "lau", "source-layer": "lau", filter: ["in", ["get", "gisco_id"], ["literal", []]], paint: { "line-color": "#5541F0", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.2, 8, 2, 11, 2.5] } }, beforeId);
+      map.addLayer({ id: "country-highlight", type: "line", source: "protomaps", "source-layer": "boundaries", filter: ["all", ["<=", ["get", "kind_detail"], 2], ["==", ["get", "brk_a3"], "ZZZ"]], paint: { "line-color": "#5541F0", "line-width": 3 }, layout: { visibility: "none" } }, beforeId);
 
       // Diagonale du vide — two dashed VRT-purple lines bounding the
       // band of depopulating French communes (NE-Ardennes → SW-Landes).

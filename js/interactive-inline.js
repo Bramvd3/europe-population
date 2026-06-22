@@ -134,7 +134,7 @@ export async function initInteractiveInline(options = {}) {
     const y = d3.scaleLinear().domain([0, d3.max(series, (d) => d.pop)]).nice().range([innerH, 0]);
     g.append("g").attr("transform", `translate(0,${innerH})`).call(d3.axisBottom(x).tickFormat(d3.format("d")).ticks(6));
     const line = d3.line().x((d) => x(d.year)).y((d) => y(d.pop));
-    g.append("path").datum(series).attr("fill", "none").attr("stroke", "#031037").attr("stroke-width", 2).attr("stroke-linecap", "round").attr("stroke-linejoin", "round").attr("d", line);
+    g.append("path").datum(series).attr("fill", "none").attr("stroke", "#5541F0").attr("stroke-width", 3).attr("stroke-linecap", "round").attr("stroke-linejoin", "round").attr("d", line);
 
     const first = series[0];
     const last = series[series.length - 1];
@@ -146,13 +146,6 @@ export async function initInteractiveInline(options = {}) {
     for (const { point, anchor, dx, dy, className } of markers) {
       if (seenYears.has(point.year)) continue;
       seenYears.add(point.year);
-      g.append("circle")
-        .attr("r", 4.2)
-        .attr("cx", x(point.year))
-        .attr("cy", y(point.pop))
-        .attr("fill", "#5541F0")
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 1.5);
       g.append("text")
         .attr("class", className)
         .attr("text-anchor", anchor)
