@@ -597,8 +597,6 @@ a:hover {
   font-size: 16px;
   font-weight: 600;
   fill: var(--ink-soft);
-  stroke: rgba(255, 255, 255, 0.9);
-  stroke-width: 5px;
   paint-order: stroke;
   font-variant-numeric: tabular-nums;
 }
