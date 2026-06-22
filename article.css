@@ -156,7 +156,7 @@ a:hover {
   object-fit: cover;
   /* Match VRT's scrollyIntro: image sits at 0.8 opacity over the
      purple gradient, giving every photo a unified brand tint. */
-  opacity: 0.8;
+  opacity: 0.9;
   z-index: 0;
 }
 .hero-intro__overlay {
@@ -172,7 +172,7 @@ a:hover {
   color: #fff;
   /* A subtle vertical darkening on top of the image+gradient mix so
      white text reads cleanly regardless of which photo the editor
-     drops in. */
+     drops in. 
   background: linear-gradient(
     180deg,
     rgba(3, 16, 55, 0.25) 0%,
@@ -180,6 +180,7 @@ a:hover {
     rgba(3, 16, 55, 0.05) 60%,
     rgba(3, 16, 55, 0.35) 100%
   );
+  */
 }
 .hero-intro__brand {
   display: block;
@@ -188,7 +189,6 @@ a:hover {
 .hero-intro__brand img {
   height: 28px;
   width: auto;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
 }
 .hero-intro__title {
   font-family: var(--font-display);
@@ -198,7 +198,6 @@ a:hover {
   letter-spacing: -0.025em;
   margin: 0 0 6px;
   color: #fff;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.35);
   max-width: 14ch;
 }
 .hero-intro__subtitle {
@@ -210,7 +209,6 @@ a:hover {
   letter-spacing: -0.02em;
   margin: 0 0 36px;
   color: #fff;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.35);
   max-width: 16ch;
 }
 .hero-intro__lead {
@@ -219,29 +217,42 @@ a:hover {
   line-height: 1.5;
   margin: 0 0 48px;
   color: rgba(255, 255, 255, 0.92);
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.4);
 }
 .hero-intro__chevron {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+  width: 2rem;
   color: #fff;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.45);
   text-decoration: none;
   transition: background 0.2s ease, transform 0.2s ease;
-  animation: hero-chevron-bounce 2.2s ease-in-out infinite;
+  animation: hero-chevron-bounce 2s ease-in-out infinite;
 }
+
+.hero-intro__chevron img {
+    width: 100%;
+}
+
 .hero-intro__chevron:hover {
-  background: rgba(255, 255, 255, 0.22);
   text-decoration: none;
 }
+
 @keyframes hero-chevron-bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(8px); }
+      0%,
+    20%,
+    50%,
+    80%,
+    100% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-20px);
+    }
+
+    60% {
+        transform: translateY(-10px);
+    }
 }
 
 /* Mobile: shrink the hero so the chevron stays visible on tall phones */
