@@ -40,6 +40,11 @@
   --vio2:     #7766ED;               /* lighter purple for highlights */
   --subgrey:  #69788C;               /* secondary text */
 
+  --violet1: #EFEDFD;  
+  --violet2: #C9C2F8;  
+  --tangerine3: #FF7882;
+  --tangerine4: #E62323; 
+
   /* Older alias names kept so existing rules keep working unchanged. */
   --vrt-accent:      var(--basevio);
   --vrt-accent-dark: var(--coltyp3);
@@ -156,7 +161,7 @@ a:hover {
   object-fit: cover;
   /* Match VRT's scrollyIntro: image sits at 0.8 opacity over the
      purple gradient, giving every photo a unified brand tint. */
-  opacity: 0.9;
+  opacity: 0.8;
   z-index: 0;
 }
 .hero-intro__overlay {

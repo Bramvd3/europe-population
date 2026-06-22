@@ -1,8 +1,8 @@
 /* Inline interactive map controller for article page (no iframe). */
 const ALL_YEARS = [1961, 1971, 1981, 1991, 2001, 2011, 2021, 2024];
-const PCT_BINS = [-25, -15, -8, -3, 0, 5, 15, 35, 75];
+const PCT_BINS = [-75, -50, -25, -10, 0, 10, 25, 50, 75];
 const ABS_BINS = [-20000, -10000, -5000, -1000, 0, 1000, 5000, 10000, 20000];
-const COLORS = ["#d46780", "#df91a3", "#e8acb3", "#f0c6c3", "#f7e1d4", "#e7e7c3", "#d0d3a2", "#bac082", "#8e9847", "#646c1d"];
+const COLORS = ["#E62323", "#FF4944", "#FF7882", "#FFBFC3", "#FFF2F6", "#EEF7EE", "#C3F0C7", "#6DE19B", "#3ECF6E", "#21891F"];
 const NO_DATA_COLOR = "rgba(0,0,0,0)";
 const PROTOMAPS_KEY = "d3b78e1318dd7bcb";
 const PROTOMAPS_FLAVOR = "white";
