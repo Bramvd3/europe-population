@@ -324,15 +324,15 @@ a:hover {
 }
 .prose p {
   margin: 0 0 20px 0;
-  font-size: 19px;
-  line-height: 1.65;
+  font-size: 1.1rem;
+  line-height: 1.4;
 }
 .prose p:last-child { margin-bottom: 0; }
 .prose h2 {
   font-family: var(--font-display);
-  font-size: 28px;
-  font-weight: 800;
-  line-height: 1.2;
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.4;
   letter-spacing: -0.02em;
   margin: 48px 0 18px 0;
   color: var(--ink);
@@ -342,7 +342,7 @@ a:hover {
 .prose em { font-style: italic; }
 .prose__hint {
   color: var(--ink-soft);
-  font-size: 14px;
+  font-size: 1.1rem;
   text-align: center;
   margin: 22px 0 0 0 !important;
 }
@@ -350,9 +350,9 @@ a:hover {
 /* Pull-quote */
 .pull-quote {
   font-family: var(--font-display);
-  font-size: 24px;
-  line-height: 1.35;
-  font-weight: 600;
+  font-size: 1.2rem;
+  line-height: 1.4;
+  font-weight: 400;
   color: var(--ink);
   border-left: 4px solid var(--vrt-accent);
   padding: 6px 0 6px 22px;
@@ -361,32 +361,70 @@ a:hover {
 }
 
 /* Methodology dropdown */
+summary{
+  display: flex;
+  align-items: center;
+}
 .methodology-dropdown {
   margin: 36px 0 0;
-  border: 1px solid var(--rule);
-  border-radius: 6px;
-  background: var(--bg-soft);
+  border-radius: 15px;
+  background: var(--violet1);
   overflow: hidden;
 }
 .methodology-dropdown summary {
   cursor: pointer;
   font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1.25;
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: 1.4;
   padding: 16px 18px;
   color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.methodology-dropdown[open] summary {
-  border-bottom: 1px solid var(--rule);
+
+.methodology-dropdown summary::marker {
+  display: none;
+}
+
+.methodology-dropdown summary::before {
+  content: '';
+  display: inline-block;
+  width: 1.1rem;
+  height: 1.1rem;
+  background-image: url('assets/img/chevronright-dark.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.methodology-dropdown[open] summary::before {
+  transform: rotate(90deg);
 }
 .methodology-dropdown p {
   margin: 0;
   padding: 16px 18px;
+  opacity: 0;
+  animation: slideIn 0.4s ease-out 0.1s forwards;
 }
 .methodology-dropdown p + p {
   padding-top: 0;
   padding-bottom: 18px;
+  animation-delay: 0.2s;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ============================================================
