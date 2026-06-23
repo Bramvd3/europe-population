@@ -8,9 +8,11 @@ const NO_DATA_COLOR = "rgba(0,0,0,0)";
 
 // Gent, antwerpen, brussel, charleroi, luik — used to highlight in step 2. 
 const BIG_CITIES = ["BE_44021", "BE_11002", "BE_21004", "BE_62063", "BE_52011"];
-// Mechelen, Aalst, Ninove, Tienen — used to highlight in step 19.
-const FOUR_NEAR_BRUSSELS = ["BE_12025", "BE_41002", "BE_41048", "BE_24107"];
-// Aalst, Wetteren, Mechelen, Tienen — small Flemish cities (step 10).
+// Mechelen + Vilvoorde — highlight in step 13 (kleine steden rond Brussel).
+const MECHELEN_VILVOORDE = ["BE_12025", "BE_23088"];
+// Aalst, Ninove, Tienen, Denderleeuw — historische arbeiderssteden, step 14.
+const ARBEIDERSSTEDEN = ["BE_41002", "BE_41048", "BE_24107", "BE_41011"];
+// Aalst, Wetteren, Mechelen, Tienen — small Flemish cities (step 4).
 const FOUR_SMALLER = ["BE_41002", "BE_42025", "BE_12025", "BE_24107"];
 
 // Pseudo-IDs for the chart engine. When a data-ids attribute lists one
@@ -62,29 +64,31 @@ const STEPS = [
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
   // 12 — Druk op de woningmarkt (focus Brussel).
   { yearA: 2001, yearB: 2024, center: [4.4, 50.85], zoom: 9.0, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
-  // 13 — Steden rond Brussel (Mechelen/Aalst/Ninove/Tienen highlighted).
-  { yearA: 2001, yearB: 2024, center: [4.4, 50.85], zoom: 9.0, highlight: FOUR_NEAR_BRUSSELS, dim: ["BE_"], countryHighlight: null },
-  // 14 — De allersnelste groeiers (Luxemburgse grens).
+  // 13 — Kleine steden groeien mee: Mechelen + Vilvoorde highlighted.
+  { yearA: 2001, yearB: 2024, center: [4.4, 50.95], zoom: 9.0, highlight: MECHELEN_VILVOORDE, dim: ["BE_"], countryHighlight: null },
+  // 14 — Historische arbeiderssteden: Aalst / Ninove / Tienen / Denderleeuw.
+  { yearA: 2001, yearB: 2024, center: [4.4, 50.85], zoom: 8.5, highlight: ARBEIDERSSTEDEN, dim: ["BE_"], countryHighlight: null },
+  // 15 — De allersnelste groeiers (Luxemburgse grens).
   { yearA: 2001, yearB: 2024, center: [5.85, 49.83], zoom: 8.5, highlight: [], dim: ["BE_", "LU_"], countryHighlight: "LUX" },
-  // 15 — De Westhoek volgt het Europees patroon.
+  // 16 — De Westhoek volgt het Europees patroon.
   { yearA: 2001, yearB: 2024, center: [2.85, 50.9], zoom: 9.5, highlight: [], dim: ["BE_"], countryHighlight: null },
-  // 16 — De bevolking groeit bijna overal (focus BE).
+  // 17 — De bevolking groeit bijna overal (focus BE).
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: [], dim: ["BE_"], countryHighlight: null },
-  // 17 — Contrast met Frankrijk en Duitsland (zoom uit, ontdim FR/BE/DE).
+  // 18 — Contrast met Frankrijk en Duitsland (zoom uit, ontdim FR/BE/DE).
   { yearA: 2001, yearB: 2024, center: [6, 49.5], zoom: 5.8, highlight: [], dim: ["FR_", "BE_", "DE_"], countryHighlight: null },
-  // 18 — Chapter: 2 grote Europese trends (period switches back to 1961-2024).
+  // 19 — Chapter: 2 grote Europese trends (period switches back to 1961-2024).
   { yearA: 1961, yearB: 2024, center: [10, 52], zoom: 4.5, highlight: [], dim: null, countryHighlight: null, chapter: true },
-  // 19 — Aantrekkingspolen: heel Europa, no dim (groene eilanden in het rood).
+  // 20 — Aantrekkingspolen: heel Europa, no dim (groene eilanden in het rood).
   { yearA: 1961, yearB: 2024, center: [10, 50], zoom: 4.3, highlight: [], dim: null, countryHighlight: null },
-  // 20 — Heel Europa / Iberisch Schiereiland: focus Spain + Portugal.
+  // 21 — Heel Europa / Iberisch Schiereiland: focus Spain + Portugal.
   { yearA: 1961, yearB: 2024, center: [-3.8, 40.5], zoom: 5.3, highlight: [], dim: ["ES_", "PT_", "FR_"], countryHighlight: null },
-  // 21 — Frankrijk + diagonale du vide.
+  // 22 — Frankrijk + diagonale du vide.
   { yearA: 1961, yearB: 2024, center: [2.5, 46.5], zoom: 5.2, highlight: [], dim: ["ES_", "PT_", "FR_"], countryHighlight: null, showDiagonal: true },
-  // 22 — Emigratie uit Oost-Europa: focus RO + BG + Baltische staten.
+  // 23 — Emigratie uit Oost-Europa: focus RO + BG + Baltische staten.
   { yearA: 1961, yearB: 2024, center: [25, 43], zoom: 5.0, highlight: [], dim: ["RO_", "BG_"], countryHighlight: null },
-  // 23 — Noordwest-Europa / Benelux + Denemarken + West-Duitsland.
+  // 24 — Noordwest-Europa / Benelux + Denemarken + West-Duitsland.
   { yearA: 1961, yearB: 2024, center: [3, 52], zoom: 4.8, highlight: [], dim: ["BE_", "NL_", "LU_", "DK_", "DE_", "UK", "IE_"], countryHighlight: null },
-  // 24 — Duitsland (oost/west demografische scheidslijn).
+  // 25 — Duitsland (oost/west demografische scheidslijn).
   { yearA: 1961, yearB: 2024, center: [10.5, 51], zoom: 5.4, highlight: [], dim: ["DE_"], countryHighlight: null },
 ];
 
