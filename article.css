@@ -96,7 +96,6 @@ a:hover {
 }
 .brand,
 .brand:hover,
-.scrolly__card a,
 #creditcontainer a,
 #creditcontainer a:hover {
   /* logos + a few special links should not show the underline */
