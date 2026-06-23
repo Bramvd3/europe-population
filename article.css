@@ -607,9 +607,9 @@ summary{
   z-index: 1;
 }
 
-#chapter-1{background-image: url('assets/img/h1-brussel.jpg');}
-#chapter-2{background-image: url('assets/img/h2-antwerpen.jpeg');}
-#chapter-3{background-image: url('assets/img/h3-europa.jpeg');}
+#belgie{background-image: url('assets/img/h1-brussel.jpg');}
+#de-21e-eeuw{background-image: url('assets/img/h2-antwerpen.jpeg');}
+#europese-trends{background-image: url('assets/img/h3-europa.jpeg');}
 
 /* Scrollbox-style card (VRT NWS). Translucent white with strong blur,
    pill-rounded, soft shadow, gap-based spacing for header→body. */

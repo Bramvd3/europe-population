@@ -43,7 +43,22 @@ const observer = new IntersectionObserver((entries) => {
   }
 }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
 boxes.forEach((box) => observer.observe(box));
-setTimeout(() => sendStep(0), 200);
+
+document.addEventListener("click", (event) => {
+  const a = event.target.closest("a[href^='#']");
+  if (!a) return;
+  const href = a.getAttribute("href");
+  if (href.length < 2) return;
+  const id = href.slice(1);
+  const el = document.getElementById(id);
+  if (!el || !el.classList.contains("scrolly__box")) return;
+  const idx = Number.parseInt(el.dataset.step, 10);
+  if (!Number.isFinite(idx)) return;
+  event.preventDefault();
+  el.scrollIntoView({ block: "start", behavior: "smooth" });
+  sendStep(idx);
+  history.pushState(null, "", "#" + id);
+});
 
 const interactiveRoot = document.getElementById("interactive-root");
 if (interactiveRoot) {
