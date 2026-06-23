@@ -42,47 +42,49 @@ const STEPS = [
   { yearA: 1961, yearB: 2001, center: [4.6, 50.7], zoom: 6.5, highlight: [], dim: null, countryHighlight: null, chapter: true },
   // 2 — De stadsvlucht (5 grote BE steden highlighted).
   { yearA: 1961, yearB: 2001, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
-  // 3 — Aalst / Wetteren / Mechelen / Tienen.
+  // 3 — De suburbanisatie (zoom op Gent).
+  { yearA: 1961, yearB: 2001, center: [3.72, 51.05], zoom: 9.5, highlight: [], dim: ["BE_"], countryHighlight: null },
+  // 4 — Aalst / Wetteren / Mechelen / Tienen.
   { yearA: 1961, yearB: 2001, center: [4.4, 50.95], zoom: 8.5, highlight: FOUR_SMALLER, dim: ["BE_"], countryHighlight: null },
-  // 4 — Brusselaars trekken naar de rand (focus Brussel + chart BRU+LLN).
+  // 5 — Brusselaars trekken naar de rand (focus Brussel + chart BRU+LLN).
   { yearA: 1961, yearB: 2001, center: [4.4, 50.85], zoom: 9.0, highlight: [], dim: ["BE_"], countryHighlight: null },
-  // 5 — Hetzelfde verhaal in Antwerpen.
+  // 6 — Hetzelfde verhaal in Antwerpen.
   { yearA: 1961, yearB: 2001, center: [4.7, 51.2], zoom: 9.5, highlight: [], dim: ["BE_"], countryHighlight: null },
-  // 6 — Limburg is een geval apart (focus Limburg + chart Houthalen-Helchteren).
+  // 7 — Limburg is een geval apart (focus Limburg + chart Houthalen-Helchteren).
   { yearA: 1961, yearB: 2001, center: [5.4, 50.95], zoom: 9.0, highlight: [], dim: ["BE_"], countryHighlight: null },
-  // 7 — De krimpende Westhoek (1961-2001).
+  // 8 — De krimpende Westhoek (1961-2001).
   { yearA: 1961, yearB: 2001, center: [3.05, 50.9], zoom: 9.2, highlight: [], dim: ["BE_"], countryHighlight: null },
-  // 8 — Chapter: De 21e eeuw (period switches to 2001-2024).
+  // 9 — Chapter: De 21e eeuw (period switches to 2001-2024).
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 6.5, highlight: [], dim: null, countryHighlight: null, chapter: true },
-  // 9 — De steden groeien terug (BE focus + 5 cities).
+  // 10 — De steden groeien terug (BE focus + 5 cities).
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
-  // 10 — De knik in de grafiek (5 cities + 3 in-card charts).
+  // 11 — De knik in de grafiek (5 cities + 3 in-card charts).
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
-  // 11 — Druk op de woningmarkt (focus Brussel).
+  // 12 — Druk op de woningmarkt (focus Brussel).
   { yearA: 2001, yearB: 2024, center: [4.4, 50.85], zoom: 9.0, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
-  // 12 — Steden rond Brussel (Mechelen/Aalst/Ninove/Tienen highlighted).
+  // 13 — Steden rond Brussel (Mechelen/Aalst/Ninove/Tienen highlighted).
   { yearA: 2001, yearB: 2024, center: [4.4, 50.85], zoom: 9.0, highlight: FOUR_NEAR_BRUSSELS, dim: ["BE_"], countryHighlight: null },
-  // 13 — De allersnelste groeiers (Luxemburgse grens).
+  // 14 — De allersnelste groeiers (Luxemburgse grens).
   { yearA: 2001, yearB: 2024, center: [5.85, 49.83], zoom: 8.5, highlight: [], dim: ["BE_", "LU_"], countryHighlight: "LUX" },
-  // 14 — De Westhoek volgt het Europees patroon.
+  // 15 — De Westhoek volgt het Europees patroon.
   { yearA: 2001, yearB: 2024, center: [2.85, 50.9], zoom: 9.5, highlight: [], dim: ["BE_"], countryHighlight: null },
-  // 15 — De bevolking groeit bijna overal (focus BE).
+  // 16 — De bevolking groeit bijna overal (focus BE).
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: [], dim: ["BE_"], countryHighlight: null },
-  // 16 — Contrast met Frankrijk en Duitsland (zoom uit, ontdim FR/BE/DE).
+  // 17 — Contrast met Frankrijk en Duitsland (zoom uit, ontdim FR/BE/DE).
   { yearA: 2001, yearB: 2024, center: [6, 49.5], zoom: 5.8, highlight: [], dim: ["FR_", "BE_", "DE_"], countryHighlight: null },
-  // 17 — Chapter: 2 grote Europese trends (period switches back to 1961-2024).
+  // 18 — Chapter: 2 grote Europese trends (period switches back to 1961-2024).
   { yearA: 1961, yearB: 2024, center: [10, 52], zoom: 4.5, highlight: [], dim: null, countryHighlight: null, chapter: true },
-  // 18 — Aantrekkingspolen: heel Europa, no dim (groene eilanden in het rood).
+  // 19 — Aantrekkingspolen: heel Europa, no dim (groene eilanden in het rood).
   { yearA: 1961, yearB: 2024, center: [10, 50], zoom: 4.3, highlight: [], dim: null, countryHighlight: null },
-  // 19 — Heel Europa / Iberisch Schiereiland: focus Spain + Portugal.
+  // 20 — Heel Europa / Iberisch Schiereiland: focus Spain + Portugal.
   { yearA: 1961, yearB: 2024, center: [-3.8, 40.5], zoom: 5.3, highlight: [], dim: ["ES_", "PT_", "FR_"], countryHighlight: null },
-  // 20 — Frankrijk + diagonale du vide.
+  // 21 — Frankrijk + diagonale du vide.
   { yearA: 1961, yearB: 2024, center: [2.5, 46.5], zoom: 5.2, highlight: [], dim: ["ES_", "PT_", "FR_"], countryHighlight: null, showDiagonal: true },
-  // 21 — Emigratie uit Oost-Europa: focus RO + BG + Baltische staten.
+  // 22 — Emigratie uit Oost-Europa: focus RO + BG + Baltische staten.
   { yearA: 1961, yearB: 2024, center: [25, 43], zoom: 5.0, highlight: [], dim: ["RO_", "BG_"], countryHighlight: null },
-  // 22 — Noordwest-Europa / Benelux + Denemarken + West-Duitsland.
+  // 23 — Noordwest-Europa / Benelux + Denemarken + West-Duitsland.
   { yearA: 1961, yearB: 2024, center: [3, 52], zoom: 4.8, highlight: [], dim: ["BE_", "NL_", "LU_", "DK_", "DE_", "UK", "IE_"], countryHighlight: null },
-  // 23 — Duitsland (oost/west demografische scheidslijn).
+  // 24 — Duitsland (oost/west demografische scheidslijn).
   { yearA: 1961, yearB: 2024, center: [10.5, 51], zoom: 5.4, highlight: [], dim: ["DE_"], countryHighlight: null },
 ];
 
