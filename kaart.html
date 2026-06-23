@@ -81,6 +81,8 @@
     import { initInteractiveInline } from "./js/interactive-inline.js";
     initInteractiveInline({
       rootElement: document.getElementById("interactive-root"),
+      // Belgium-centred opening view
+      initialView: { center: [4.6, 50.6], zoom: 7.3 },
     }).catch((err) => console.error(err));
   </script>
 </body>

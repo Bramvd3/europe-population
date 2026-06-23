@@ -71,11 +71,12 @@ export async function initInteractiveInline(options = {}) {
   const protocol = new pmtiles.Protocol();
   maplibregl.addProtocol("pmtiles", protocol.tile);
 
+  const initialView = options.initialView || { center: [12, 53], zoom: 3.4 };
   map = new maplibregl.Map({
     container: mapEl,
     style: buildProtomapsStyle(),
-    center: [12, 53],
-    zoom: 3.4,
+    center: initialView.center,
+    zoom: initialView.zoom,
     minZoom: 2,
     maxZoom: 12,
     attributionControl: false,
