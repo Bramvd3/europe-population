@@ -779,7 +779,7 @@ summary {
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-radius: 10px;
+  border-radius: 18px;
   filter: drop-shadow(0 0 15px rgba(3, 16, 55, 0.1));
   display: flex;
   flex-direction: column;
