@@ -464,6 +464,22 @@ a:hover {
 }
 
 
+/* image in article */
+.img-article img{
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.img-article .caption {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  margin: 6px 0 0 10px;
+}
+
 /* Methodology dropdown */
 summary {
   display: flex;
