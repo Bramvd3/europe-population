@@ -81,8 +81,16 @@
     import { initInteractiveInline } from "./js/interactive-inline.js";
     initInteractiveInline({
       rootElement: document.getElementById("interactive-root"),
-      // Belgium-centred opening view
-      initialView: { center: [4.6, 50.6], zoom: 7.3 },
+      // Belgium bounding box — fit-to-bounds means the view adapts
+      // to the iframe/viewport size at render time, so a narrow phone
+      // embed, a 600 px article embed, and a full-viewport opening
+      // all land on a sensible Belgium-centred view. Robust against
+      // AEM's responsive-iframe dance (container starts at 0 px tall
+      // and grows after our init runs — we re-fit then).
+      initialView: {
+        bounds: [[2.4, 49.4], [6.5, 51.6]],
+        padding: 30,
+      },
     }).catch((err) => console.error(err));
   </script>
 </body>

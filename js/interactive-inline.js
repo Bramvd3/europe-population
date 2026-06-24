@@ -71,16 +71,51 @@ export async function initInteractiveInline(options = {}) {
   const protocol = new pmtiles.Protocol();
   maplibregl.addProtocol("pmtiles", protocol.tile);
 
+  // Initial view: two shapes accepted.
+  //   { center: [lon, lat], zoom: N }    — fixed pose, used inside the article.
+  //   { bounds: [[w,s],[e,n]], padding } — fit to a bbox at the live
+  //     container size. Preferred for embeds (AEM does a responsive-
+  //     iframe dance where the container starts at 0px tall and grows
+  //     later; fitBounds adapts because we re-apply it after a delay).
   const initialView = options.initialView || { center: [12, 53], zoom: 3.4 };
+  let ctorCenter, ctorZoom;
+  if (initialView.bounds) {
+    const [[w, s], [e, n]] = initialView.bounds;
+    ctorCenter = [(w + e) / 2, (s + n) / 2];
+    ctorZoom = 6;  // rough; fitBounds right after load refines it
+  } else {
+    ctorCenter = initialView.center;
+    ctorZoom = initialView.zoom;
+  }
   map = new maplibregl.Map({
     container: mapEl,
     style: buildProtomapsStyle(),
-    center: initialView.center,
-    zoom: initialView.zoom,
+    center: ctorCenter,
+    zoom: ctorZoom,
     minZoom: 2,
     maxZoom: 12,
     attributionControl: false,
   });
+
+  // Track user interaction so we don't override a manual pan/zoom
+  // when the late-resize re-fit fires (AEM growth case).
+  let userMoved = false;
+  const markUserMoved = () => { userMoved = true; };
+  map.on("dragstart", markUserMoved);
+  map.on("zoomstart", (e) => { if (e.originalEvent) markUserMoved(); });
+  map.on("rotatestart", markUserMoved);
+
+  function applyInitialView() {
+    if (userMoved) return;
+    if (initialView.bounds) {
+      map.fitBounds(initialView.bounds, {
+        padding: initialView.padding != null ? initialView.padding : 20,
+        animate: false,
+      });
+    } else if (initialView.center != null && initialView.zoom != null) {
+      map.jumpTo({ center: initialView.center, zoom: initialView.zoom });
+    }
+  }
 
   function findCountryBorderLayer() {
     const layers = map.getStyle().layers;
@@ -420,6 +455,18 @@ export async function initInteractiveInline(options = {}) {
       attachInteractions();
       updateLegend();
       periodTitleEl.textContent = "Bevolkingsevolutie in Europa";
+      // Apply the requested initial view (fitBounds for bbox-based
+      // configs, jumpTo for fixed-pose). Re-apply once after a beat
+      // to catch the AEM-style responsive iframe whose container
+      // grows from 0px AFTER our load handler runs — without this
+      // the fit is computed against a 0×N container and ends up
+      // looking "zoomed out".
+      map.resize();
+      applyInitialView();
+      window.setTimeout(() => {
+        map.resize();
+        applyInitialView();
+      }, 600);
       resolve();
     });
   });
