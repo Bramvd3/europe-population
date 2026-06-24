@@ -12,44 +12,52 @@
   font-weight: 400;
   font-display: swap;
   src: url("assets/fonts/Roobert-Regular.woff2") format("woff2"),
-       url("assets/fonts/Roobert-Regular.woff") format("woff");
+    url("assets/fonts/Roobert-Regular.woff") format("woff");
 }
+
 @font-face {
   font-family: "Roobert";
   font-weight: 500;
   font-display: swap;
   src: url("assets/fonts/Roobert-Medium.woff2") format("woff2"),
-       url("assets/fonts/Roobert-Medium.woff") format("woff");
+    url("assets/fonts/Roobert-Medium.woff") format("woff");
 }
+
 @font-face {
   font-family: "Roobert";
   font-weight: 600;
   font-display: swap;
   src: url("assets/fonts/Roobert-SemiBold.woff2") format("woff2"),
-       url("assets/fonts/Roobert-SemiBold.woff") format("woff");
+    url("assets/fonts/Roobert-SemiBold.woff") format("woff");
 }
 
 :root {
   /* VRT NWS canonical palette — same names as the brand stylesheet, so
      designers can drop in any other VRT scrollytelling CSS unchanged. */
-  --basevio:  #5541F0;               /* primary purple */
-  --darkvio:  #031037;               /* near-black, body text + headings */
-  --teal:     #34BEAB;               /* accent — sparingly used */
-  --coltyp3:  #4031AE;               /* gradient anchor (darker purple) */
+  --basevio: #5541F0;
+  /* primary purple */
+  --darkvio: #031037;
+  /* near-black, body text + headings */
+  --teal: #34BEAB;
+  /* accent — sparingly used */
+  --coltyp3: #4031AE;
+  /* gradient anchor (darker purple) */
   --colwhite: #FFF;
-  --vio2:     #7766ED;               /* lighter purple for highlights */
-  --subgrey:  #69788C;               /* secondary text */
+  --vio2: #7766ED;
+  /* lighter purple for highlights */
+  --subgrey: #69788C;
+  /* secondary text */
 
-  --violet1: #EFEDFD;  
-  --violet2: #C9C2F8;  
+  --violet1: #EFEDFD;
+  --violet2: #C9C2F8;
   --tangerine3: #FF7882;
-  --tangerine4: #E62323; 
+  --tangerine4: #E62323;
 
   /* Older alias names kept so existing rules keep working unchanged. */
-  --vrt-accent:      var(--basevio);
+  --vrt-accent: var(--basevio);
   --vrt-accent-dark: var(--coltyp3);
-  --ink:             var(--darkvio);
-  --ink-soft:        var(--subgrey);
+  --ink: var(--darkvio);
+  --ink-soft: var(--subgrey);
 
   --rule: #e6e6ec;
   --bg: #ffffff;
@@ -68,13 +76,24 @@
 
 /* VRT NWS utility filters — for elements that need to feel like they
    'sit above' the page (cards, popups, the hero text-container). */
-.shadow-harder { filter: drop-shadow(0 0 50px rgba(3, 16, 55, 0.7)); }
-.shadow-hard { filter: drop-shadow(0 0 15px rgba(3, 16, 55, 0.4)); }
-.shadow      { filter: drop-shadow(0 0 15px rgba(3, 16, 55, 0.1)); }
+.shadow-harder {
+  filter: drop-shadow(0 0 30px rgba(3, 16, 55, 0.8));
+}
 
-* { box-sizing: border-box; }
+.shadow-hard {
+  filter: drop-shadow(0 0 15px rgba(3, 16, 55, 0.4));
+}
 
-html, body {
+.shadow {
+  filter: drop-shadow(0 0 15px rgba(3, 16, 55, 0.1));
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
   margin: 0;
   padding: 0;
   background: var(--bg);
@@ -90,10 +109,12 @@ a {
   text-decoration: underline solid var(--vrt-accent) 2px;
   text-underline-offset: 3px;
 }
+
 a:hover {
   color: var(--vrt-accent);
   text-decoration: underline solid var(--vrt-accent) 2px;
 }
+
 .brand,
 .brand:hover,
 #creditcontainer a,
@@ -117,11 +138,13 @@ a:hover {
   display: flex;
   align-items: center;
 }
+
 .brand {
   display: inline-flex;
   align-items: center;
   text-decoration: none;
 }
+
 .brand img {
   display: block;
   height: 22px;
@@ -131,7 +154,9 @@ a:hover {
 /* ============================================================
    ARTICLE HEADER
    ============================================================ */
-.article { margin: 0 auto; }
+.article {
+  margin: 0 auto;
+}
 
 /* ============================================================
    HERO INTRO (full-bleed cinematic header)
@@ -153,6 +178,7 @@ a:hover {
   background: linear-gradient(45deg, var(--coltyp3) 0%, var(--basevio) 100%);
   margin-bottom: 56px;
 }
+
 .hero-intro__bg {
   position: absolute;
   inset: 0;
@@ -164,6 +190,7 @@ a:hover {
   opacity: 0.7;
   z-index: 0;
 }
+
 .hero-intro__overlay {
   position: relative;
   z-index: 1;
@@ -187,14 +214,17 @@ a:hover {
   );
   */
 }
+
 .hero-intro__brand {
   display: block;
   margin-bottom: 36px;
 }
+
 .hero-intro__brand img {
   height: 28px;
   width: auto;
 }
+
 .hero-intro__title {
   font-family: var(--font-display);
   font-weight: 800;
@@ -205,6 +235,7 @@ a:hover {
   color: #fff;
   max-width: 14ch;
 }
+
 .hero-intro__subtitle {
   font-family: var(--font-display);
   font-weight: 400;
@@ -216,6 +247,7 @@ a:hover {
   color: #fff;
   max-width: 16ch;
 }
+
 .hero-intro__lead {
   max-width: 620px;
   font-size: clamp(18px, 2vw, 22px);
@@ -223,6 +255,7 @@ a:hover {
   margin: 0 0 48px;
   color: rgba(255, 255, 255, 0.92);
 }
+
 .hero-intro__chevron {
   display: inline-flex;
   align-items: center;
@@ -235,7 +268,7 @@ a:hover {
 }
 
 .hero-intro__chevron img {
-    width: 100%;
+  width: 100%;
 }
 
 .hero-intro__chevron:hover {
@@ -243,31 +276,51 @@ a:hover {
 }
 
 @keyframes hero-chevron-bounce {
-      0%,
-    20%,
-    50%,
-    80%,
-    100% {
-        transform: translateY(0);
-    }
 
-    40% {
-        transform: translateY(-20px);
-    }
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
 
-    60% {
-        transform: translateY(-10px);
-    }
+  40% {
+    transform: translateY(-20px);
+  }
+
+  60% {
+    transform: translateY(-10px);
+  }
 }
 
 /* Mobile: shrink the hero so the chevron stays visible on tall phones */
 @media (max-width: 720px) {
-  .hero-intro { min-height: 540px; margin-bottom: 32px; }
-  .hero-intro__brand img { height: 22px; }
-  .hero-intro__brand { margin-bottom: 24px; }
-  .hero-intro__subtitle { margin-bottom: 24px; }
-  .hero-intro__lead { margin-bottom: 32px; }
-  .hero-intro__chevron { width: 42px; height: 42px; }
+  .hero-intro {
+    min-height: 540px;
+    margin-bottom: 32px;
+  }
+
+  .hero-intro__brand img {
+    height: 22px;
+  }
+
+  .hero-intro__brand {
+    margin-bottom: 24px;
+  }
+
+  .hero-intro__subtitle {
+    margin-bottom: 24px;
+  }
+
+  .hero-intro__lead {
+    margin-bottom: 32px;
+  }
+
+  .hero-intro__chevron {
+    width: 42px;
+    height: 42px;
+  }
 }
 
 .article-head {
@@ -275,6 +328,7 @@ a:hover {
   margin: 56px auto 32px;
   padding: 0 24px;
 }
+
 .kicker {
   display: inline-block;
   margin: 0 0 14px 0;
@@ -285,6 +339,7 @@ a:hover {
   text-transform: uppercase;
   color: var(--vrt-accent);
 }
+
 .article-title {
   font-family: var(--font-display);
   font-size: 42px;
@@ -294,6 +349,7 @@ a:hover {
   margin: 0 0 22px 0;
   color: var(--ink);
 }
+
 .article-lead {
   font-size: 23px;
   line-height: 1.5;
@@ -301,6 +357,7 @@ a:hover {
   margin: 0 0 28px 0;
   font-weight: 400;
 }
+
 .article-meta {
   display: flex;
   justify-content: space-between;
@@ -311,7 +368,10 @@ a:hover {
   font-size: 14px;
   color: var(--ink-soft);
 }
-.byline strong { color: var(--ink); }
+
+.byline strong {
+  color: var(--ink);
+}
 
 /* ============================================================
    BODY TEXT (prose)
@@ -321,12 +381,17 @@ a:hover {
   margin: 0 auto;
   padding: 28px 24px;
 }
+
 .prose p {
   margin: 0 0 20px 0;
   font-size: 1.1rem;
   line-height: 1.4;
 }
-.prose p:last-child { margin-bottom: 0; }
+
+.prose p:last-child {
+  margin-bottom: 0;
+}
+
 .prose h2 {
   font-family: var(--font-display);
   font-size: 1.3rem;
@@ -336,9 +401,20 @@ a:hover {
   margin: 48px 0 18px 0;
   color: var(--ink);
 }
-.prose h2:first-child { margin-top: 0; }
-.prose strong { color: var(--ink); font-weight: 700; }
-.prose em { font-style: italic; }
+
+.prose h2:first-child {
+  margin-top: 0;
+}
+
+.prose strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.prose em {
+  font-style: italic;
+}
+
 .prose__hint {
   color: var(--ink-soft);
   font-size: 1.1rem;
@@ -359,17 +435,48 @@ a:hover {
   letter-spacing: -0.015em;
 }
 
+/* jumpmenu */
+
+.menu-box {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.menu-box__link {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--colwhite);
+  background-color: var(--basevio);
+  display: inline-flex;
+  text-decoration: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.menu-box__link:hover {
+  background-color: var(--coltyp3);
+  color: var(--colwhite);
+  text-decoration: none;
+}
+
+
 /* Methodology dropdown */
-summary{
+summary {
   display: flex;
   align-items: center;
 }
+
 .methodology-dropdown {
   margin: 36px 0 0;
   border-radius: 15px;
   background: var(--violet1);
   overflow: hidden;
 }
+
 .methodology-dropdown summary {
   cursor: pointer;
   font-family: var(--font-display);
@@ -403,13 +510,15 @@ summary{
 .methodology-dropdown[open] summary::before {
   transform: rotate(90deg);
 }
+
 .methodology-dropdown p {
   margin: 0;
   padding: 16px 18px;
   opacity: 0;
   animation: slideIn 0.4s ease-out 0.1s forwards;
 }
-.methodology-dropdown p + p {
+
+.methodology-dropdown p+p {
   padding-top: 0;
   padding-bottom: 18px;
   animation-delay: 0.2s;
@@ -420,6 +529,7 @@ summary{
     opacity: 0;
     transform: translateY(-8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -431,6 +541,7 @@ summary{
     opacity: 1;
     transform: translateY(0);
   }
+
   to {
     opacity: 0;
     transform: translateY(-8px);
@@ -441,7 +552,7 @@ summary{
   animation: slideOut 0.3s ease-in forwards;
 }
 
-.methodology-dropdown:not([open]) p + p {
+.methodology-dropdown:not([open]) p+p {
   animation-delay: 0s;
 }
 
@@ -461,12 +572,16 @@ summary{
   height: 100vh;
   width: 100%;
 }
+
 .scrolly-inline,
 #scrolly-map {
   width: 100%;
   height: 100%;
 }
-.scrolly-inline { position: relative; }
+
+.scrolly-inline {
+  position: relative;
+}
 
 /* VRT NWS scrollbox: translucent white card with strong blur + soft
    shadow. Used for both the in-map popups and the legend. */
@@ -488,12 +603,14 @@ summary{
   left: 24px;
   z-index: 6;
 }
+
 #scrolly-chart-panel {
   width: 360px;
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
 }
+
 .legend-number {
   font-size: 9px;
   font-family: "Roobert", Helvetica, Arial, sans-serif;
@@ -507,12 +624,16 @@ summary{
   line-height: 1.35;
   margin-top: 4px;
 }
+
 .map-footer a {
   color: var(--ink-soft);
   text-decoration: underline solid var(--vrt-accent) 1px;
   text-underline-offset: 2px;
 }
-.map-footer a:hover { color: var(--vrt-accent); }
+
+.map-footer a:hover {
+  color: var(--vrt-accent);
+}
 
 .info-sentence {
   margin: 0;
@@ -521,7 +642,12 @@ summary{
   line-height: 1.4;
   font-weight: 500;
 }
-.info-sentence strong { color: var(--basevio); font-weight: 600; }
+
+.info-sentence strong {
+  color: var(--basevio);
+  font-weight: 600;
+}
+
 #scrolly-popup-chart svg {
   display: block;
   width: 100%;
@@ -544,14 +670,17 @@ summary{
   padding: 0 5vw;
   pointer-events: none;
 }
+
 .scrolly__lead-in {
   min-height: 100vh;
   pointer-events: none;
 }
+
 .scrolly__spacer-half-screen {
   min-height: 50vh;
   pointer-events: none;
 }
+
 .scrolly__box--chapter {
   justify-content: center;
   padding: 0 8vw;
@@ -559,12 +688,14 @@ summary{
   background: linear-gradient(45deg, var(--coltyp3) 0%, var(--basevio) 100%);
   color: #fff;
 }
+
 .scrolly__chapter {
   width: min(720px, 100%);
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
+
 .scrolly__chapter h2 {
   margin: 0;
   font-family: var(--font-display);
@@ -574,13 +705,16 @@ summary{
   letter-spacing: -0.015em;
   color: #fff;
 }
+
 .scrolly__chapter p {
   margin: 0;
-  max-width: 620px;
+  max-width: 100%;
   color: rgba(255, 255, 255, 0.9);
-  font-size: 1.25rem;
-  line-height: 1.45;
+  font-size: 1.3rem;
+  line-height: 1.4;
+  font-weight: 500;
 }
+
 .card-kicker.card-kicker--light {
   color: var(--colwhite);
   background-color: var(--vio2);
@@ -593,6 +727,7 @@ summary{
   background-position: center;
   position: relative;
 }
+
 .chapterback::before {
   content: '';
   position: absolute;
@@ -601,33 +736,44 @@ summary{
   opacity: 0.3;
   pointer-events: none;
 }
-.chapterback > * {
+
+.chapterback>* {
   position: relative;
   z-index: 1;
 }
 
-#belgie{background-image: url('assets/img/h1-brussel.jpg');}
-#de-21e-eeuw{background-image: url('assets/img/h2-antwerpen.jpeg');}
-#europese-trends{background-image: url('assets/img/h3-europa.jpeg');}
+#belgie {
+  background-image: url('assets/img/h1-brussel.jpg');
+}
+
+#de-21e-eeuw {
+  background-image: url('assets/img/h2-antwerpen.jpeg');
+}
+
+#europese-trends {
+  background-image: url('assets/img/h3-europa.jpeg');
+}
 
 /* Scrollbox-style card (VRT NWS). Translucent white with strong blur,
    pill-rounded, soft shadow, gap-based spacing for header→body. */
 .scrolly__card {
   pointer-events: auto;
-  max-width: 440px;
+  max-width: 550px;
   padding: 1rem 1.2rem;
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 10px;
-  box-shadow: 0 0 20px rgba(3, 16, 55, 0.15);
+  filter: drop-shadow(0 0 15px rgba(3, 16, 55, 0.1));
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 1.2rem;
 }
+
 .scrolly__card--charts {
-  max-width: 500px;
+  max-width: 550px;
 }
+
 .scrolly__card h2 {
   font-family: var(--font-display);
   font-size: 1.3rem;
@@ -637,42 +783,54 @@ summary{
   margin: 0;
   color: var(--basevio);
 }
+
 .scrolly__card p {
   margin: 0;
   font-size: 1rem;
   line-height: 1.4;
   color: var(--darkvio);
 }
-.scrolly__card p strong { color: var(--darkvio); font-weight: 600; }
+
+.scrolly__card p strong {
+  color: var(--darkvio);
+  font-weight: 600;
+}
 
 /* Inline mini-charts inside the knik card — stacked sparklines
    (Antwerpen / Brussel / Gent) showing the population
    curve with a red dot on the 2001 turning point. Replaces the
    floating popup the same charts used to live in. */
-.step-charts:empty { display: none; }
+.step-charts:empty {
+  display: none;
+}
+
 .step-charts__row {
   display: flex;
   flex-direction: column;
   gap: 14px;
   margin-top: 6px;
 }
+
 .step-charts__cell {
   display: flex;
   flex-direction: column;
   gap: 3px;
   min-width: 0;
 }
+
 .step-charts__name {
   font-size: 1rem;
   font-weight: 600;
   color: var(--darkvio);
   letter-spacing: -0.005em;
 }
+
 .step-charts svg {
   width: 100%;
   height: auto;
   font-family: "Roobert", Helvetica, Arial, sans-serif;
 }
+
 .step-charts .chart-value-label {
   font-size: 0.8rem;
   font-weight: 600;
@@ -680,14 +838,17 @@ summary{
   paint-order: stroke;
   font-variant-numeric: tabular-nums;
 }
+
 .step-charts .chart-value-label--turn {
   fill: var(--darkvio);
   font-weight: 600;
 }
+
 .step-charts .chart-x-axis .domain,
 .step-charts .chart-x-axis .tick line {
   stroke: rgba(3, 16, 55, 0.18);
 }
+
 .step-charts .chart-x-axis .tick text {
   fill: var(--ink-soft);
   font-size: 12px;
@@ -695,7 +856,10 @@ summary{
   font-variant-numeric: tabular-nums;
 }
 
-#scrolly-card-legend { margin-top: 0; }
+#scrolly-card-legend {
+  margin-top: 0;
+}
+
 #scrolly-card-legend svg {
   width: 100%;
   height: auto;
@@ -727,6 +891,7 @@ summary{
   margin: 56px 0 0;
   padding: 0;
 }
+
 .interactive-inline {
   position: relative;
   width: 100%;
@@ -736,10 +901,12 @@ summary{
   border-radius: 4px;
   overflow: hidden;
 }
+
 .interactive-inline__map {
   position: absolute;
   inset: 0;
 }
+
 .interactive-inline__period {
   position: absolute;
   top: 12px;
@@ -747,24 +914,29 @@ summary{
   z-index: 5;
   width: 320px;
 }
+
 .interactive-inline__period p[data-role="period-title"] {
   margin: 0 0 8px 0;
   font-weight: 600;
   font-size: 14px;
   color: var(--ink);
 }
+
 .interactive-inline__period [data-role="year-slider"] {
   margin: 22px 12px 38px;
 }
+
 /* Search box — minimalist VRT-style input + magnifying glass, sits
    directly to the right of the period panel in the top-left area. */
 .interactive-inline__search {
   position: absolute;
   top: 12px;
-  left: 344px;             /* period panel is 320px wide + 12px gap */
+  left: 344px;
+  /* period panel is 320px wide + 12px gap */
   z-index: 5;
   width: 240px;
 }
+
 .search-input-wrap {
   position: relative;
   display: flex;
@@ -777,11 +949,13 @@ summary{
   padding: 0 12px;
   height: 40px;
 }
+
 .search-input-wrap .search-icon {
   flex: 0 0 auto;
   color: var(--ink-soft);
   margin-right: 8px;
 }
+
 .search-input-wrap input {
   flex: 1 1 auto;
   border: 0;
@@ -792,11 +966,16 @@ summary{
   color: var(--ink);
   min-width: 0;
 }
+
 .search-input-wrap input::placeholder {
   color: var(--ink-soft);
   font-weight: 400;
 }
-.search-input-wrap input:focus { outline: 0; }
+
+.search-input-wrap input:focus {
+  outline: 0;
+}
+
 .search-results {
   list-style: none;
   margin: 6px 0 0;
@@ -810,12 +989,14 @@ summary{
   box-shadow: 0 4px 16px rgba(3, 16, 55, 0.18);
   font-size: 0.92rem;
 }
+
 .search-results li {
   padding: 8px 14px;
   color: var(--ink);
   cursor: pointer;
   line-height: 1.2;
 }
+
 .search-results li:hover,
 .search-results li:focus {
   background: rgba(85, 65, 240, 0.10);
@@ -833,6 +1014,7 @@ summary{
   cursor: pointer;
   user-select: none;
 }
+
 .interactive-inline__chart::after {
   /* Subtle hint that the whole panel is clickable to close. */
   content: "klik om te sluiten";
@@ -845,12 +1027,14 @@ summary{
   letter-spacing: 0.06em;
   opacity: 0.7;
 }
+
 .interactive-inline [data-role="popup-chart"] svg {
   display: block;
   width: 100%;
   height: 210px;
   font-family: "Roobert", Helvetica, Arial, sans-serif;
 }
+
 .interactive-inline [data-role="popup-chart"] .chart-value-label {
   font-size: 16px;
   font-weight: 600;
@@ -860,10 +1044,12 @@ summary{
   paint-order: stroke;
   font-variant-numeric: tabular-nums;
 }
+
 .interactive-inline [data-role="popup-chart"] .chart-value-label--turn {
   fill: var(--darkvio);
   font-weight: 600;
 }
+
 .interactive-inline__legend-wrap {
   position: absolute;
   bottom: 12px;
@@ -871,9 +1057,11 @@ summary{
   z-index: 5;
   max-width: 340px;
 }
+
 .interactive-inline [data-role="legend"] {
   margin-bottom: 6px;
 }
+
 .interactive-inline [data-role="legend"] svg {
   width: 100%;
   height: auto;
@@ -886,7 +1074,11 @@ summary{
   box-shadow: none;
   height: 4px;
 }
-.noUi-connect { background: var(--vrt-accent); }
+
+.noUi-connect {
+  background: var(--vrt-accent);
+}
+
 .noUi-handle {
   background: var(--ink);
   border: 2px solid #fff;
@@ -898,7 +1090,12 @@ summary{
   right: -7px !important;
   cursor: grab;
 }
-.noUi-handle::before, .noUi-handle::after { display: none; }
+
+.noUi-handle::before,
+.noUi-handle::after {
+  display: none;
+}
+
 .noUi-tooltip {
   font-size: 11px;
   font-weight: 600;
@@ -910,32 +1107,40 @@ summary{
   bottom: 140%;
   font-variant-numeric: tabular-nums;
 }
+
 .noUi-pips-horizontal {
   height: 24px;
   padding: 6px 0 0;
 }
+
 .noUi-marker-horizontal.noUi-marker {
   height: 4px;
   background: rgba(3, 16, 55, 0.18);
 }
+
 .noUi-value {
   font-size: 10px;
   color: var(--ink-soft);
   margin-top: 4px;
 }
+
 .mode-row {
   display: none;
   gap: 14px;
   font-size: 12px;
   color: var(--ink-soft);
 }
+
 .interactive__caption {
   margin: 12px 4px 0;
   font-size: 13px;
   color: var(--ink-soft);
   line-height: 1.5;
 }
-.interactive__caption strong { color: var(--ink); }
+
+.interactive__caption strong {
+  color: var(--ink);
+}
 
 /* ============================================================
    CREDIT FOOTER (45° purple gradient, white text)
@@ -943,27 +1148,29 @@ summary{
 #creditcontainer {
   margin-top: 0;
   color: #ffffff;
-  background: linear-gradient(
-    45deg,
-    var(--vrt-accent-dark) 0%,
-    var(--vrt-accent) 100%
-  );
+  background: linear-gradient(45deg,
+      var(--vrt-accent-dark) 0%,
+      var(--vrt-accent) 100%);
   padding: 8rem 2rem;
 }
+
 #creditcenter {
   max-width: 1040px;
   margin: 0 auto;
   text-align: left;
 }
+
 #creditcenter .footerlogo {
   display: inline-block;
   margin: 0 0 1.5rem 0;
 }
+
 #creditcenter .footerlogo img {
   display: block;
   height: 30px;
   width: auto;
 }
+
 #creditcenter p {
   margin: 0;
   font-size: 1.05rem;
@@ -976,16 +1183,48 @@ summary{
    RESPONSIVE
    ============================================================ */
 @media (max-width: 720px) {
-  .article-title { font-size: 30px; }
-  .article-lead { font-size: 17px; }
-  .prose h2 { font-size: 22px; }
-  .pull-quote { font-size: 20px; }
-  .methodology-dropdown summary { font-size: 18px; }
-  .site-header { padding: 0 16px; height: 48px; }
-  .brand img { height: 18px; }
-  .scrolly__card { max-width: 86vw; padding: 20px 22px; }
-  .scrolly__card--charts { max-width: 92vw; }
-  .scrolly__card h2 { font-size: 19px; }
+  .article-title {
+    font-size: 30px;
+  }
+
+  .article-lead {
+    font-size: 17px;
+  }
+
+  .prose h2 {
+    font-size: 22px;
+  }
+
+  .pull-quote {
+    font-size: 20px;
+  }
+
+  .methodology-dropdown summary {
+    font-size: 18px;
+  }
+
+  .site-header {
+    padding: 0 16px;
+    height: 48px;
+  }
+
+  .brand img {
+    height: 18px;
+  }
+
+  .scrolly__card {
+    max-width: 86vw;
+    padding: 20px 22px;
+  }
+
+  .scrolly__card--charts {
+    max-width: 92vw;
+  }
+
+  .scrolly__card h2 {
+    font-size: 19px;
+  }
+
   /* Each scroll panel is taller than the viewport on mobile, and the
      card itself sits in the lower half so the reader sees the map
      above the card while reading. That gives the breathing room
@@ -997,6 +1236,7 @@ summary{
     min-height: 140vh;
     padding-bottom: 12vh;
   }
+
   .scrolly__box--chapter {
     padding: 0 7vw;
     align-items: center;
@@ -1004,19 +1244,42 @@ summary{
     min-height: 100vh;
     padding-bottom: 0;
   }
-  .scrolly__chapter h2 { font-size: 2.4rem; }
-  .scrolly__chapter p { font-size: 1.08rem; }
-  .step-charts__row { gap: 12px; }
-  .step-charts__name { font-size: 0.95rem; }
-  .step-charts .chart-value-label { font-size: 14px; }
-  .interactive-inline { height: 70vh; min-height: 480px; }
+
+  .scrolly__chapter h2 {
+    font-size: 2.4rem;
+  }
+
+  .scrolly__chapter p {
+    font-size: 1.08rem;
+  }
+
+  .step-charts__row {
+    gap: 12px;
+  }
+
+  .step-charts__name {
+    font-size: 0.95rem;
+  }
+
+  .step-charts .chart-value-label {
+    font-size: 14px;
+  }
+
+  .interactive-inline {
+    height: 70vh;
+    min-height: 480px;
+  }
+
   .interactive-inline__period {
     left: 8px;
     right: 8px;
     top: 8px;
     width: auto;
   }
-  .interactive-inline__period [data-role="year-slider"] { margin: 18px 8px 32px; }
+
+  .interactive-inline__period [data-role="year-slider"] {
+    margin: 18px 8px 32px;
+  }
 
   /* Search starts collapsed as a 40×40 circle below the slider so the
      period panel + circle both fit on a narrow screen. Click the circle
@@ -1031,6 +1294,7 @@ summary{
     width: 40px;
     transform: translateY(124px);
   }
+
   .interactive-inline__search .search-input-wrap {
     width: 40px;
     height: 40px;
@@ -1040,13 +1304,22 @@ summary{
     cursor: pointer;
     overflow: hidden;
     transition: width 0.2s ease, border-radius 0.2s ease,
-                padding 0.2s ease;
+      padding 0.2s ease;
   }
-  .interactive-inline__search .search-input-wrap .search-icon { margin: 0; }
-  .interactive-inline__search .search-input-wrap input { display: none; }
+
+  .interactive-inline__search .search-input-wrap .search-icon {
+    margin: 0;
+  }
+
+  .interactive-inline__search .search-input-wrap input {
+    display: none;
+  }
 
   /* Expanded — input visible, panel spans the viewport width. */
-  .interactive-inline__search.is-expanded { width: calc(100vw - 16px); }
+  .interactive-inline__search.is-expanded {
+    width: calc(100vw - 16px);
+  }
+
   .interactive-inline__search.is-expanded .search-input-wrap {
     width: 100%;
     padding: 0 12px;
@@ -1054,13 +1327,18 @@ summary{
     border-radius: 10px;
     cursor: text;
   }
+
   .interactive-inline__search.is-expanded .search-input-wrap .search-icon {
     margin-right: 8px;
   }
+
   .interactive-inline__search.is-expanded .search-input-wrap input {
     display: block;
   }
-  .interactive-inline__search .search-results { font-size: 1rem; }
+
+  .interactive-inline__search .search-results {
+    font-size: 1rem;
+  }
 
   .interactive-inline__chart-wrap {
     left: 8px;
@@ -1068,19 +1346,33 @@ summary{
     bottom: 8px;
     max-width: none;
   }
-  .interactive-inline [data-role="chart-panel"] { width: auto; }
+
+  .interactive-inline [data-role="chart-panel"] {
+    width: auto;
+  }
+
   .interactive-inline__legend-wrap {
     left: 8px;
     right: 8px;
     bottom: 8px;
     max-width: none;
   }
+
   .scrolly-inline__chart-wrap {
     bottom: 92px;
     left: 12px;
     right: 12px;
   }
-  #scrolly-chart-panel { width: auto; }
-  #creditcenter { padding: 36px 20px 40px; }
-  #creditcenter .footerlogo img { height: 24px; }
+
+  #scrolly-chart-panel {
+    width: auto;
+  }
+
+  #creditcenter {
+    padding: 36px 20px 40px;
+  }
+
+  #creditcenter .footerlogo img {
+    height: 24px;
+  }
 }
