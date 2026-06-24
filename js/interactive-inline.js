@@ -95,6 +95,15 @@ export async function initInteractiveInline(options = {}) {
     minZoom: 2,
     maxZoom: 12,
     attributionControl: false,
+    // Gebruiker moet Ctrl/Cmd (desktop) of twee vingers (touch)
+    // gebruiken om te scrollen. Voorkomt dat de pagina "vastloopt"
+    // bij scrollen over de kaart in een artikel-context.
+    cooperativeGestures: true,
+    locale: {
+      "CooperativeGesturesHandler.WindowsHelpText": "Gebruik Ctrl + scrollen om in te zoomen",
+      "CooperativeGesturesHandler.MacHelpText": "Gebruik ⌘ + scrollen om in te zoomen",
+      "CooperativeGesturesHandler.MobileHelpText": "Gebruik twee vingers om de kaart te verplaatsen",
+    },
   });
 
   // Track user interaction so we don't override a manual pan/zoom
@@ -455,18 +464,36 @@ export async function initInteractiveInline(options = {}) {
       attachInteractions();
       updateLegend();
       periodTitleEl.textContent = "Bevolkingsevolutie in Europa";
-      // Apply the requested initial view (fitBounds for bbox-based
-      // configs, jumpTo for fixed-pose). Re-apply once after a beat
-      // to catch the AEM-style responsive iframe whose container
-      // grows from 0px AFTER our load handler runs — without this
-      // the fit is computed against a 0×N container and ends up
-      // looking "zoomed out".
+      // Apply the requested initial view, then keep re-applying on
+      // every container resize until the user takes over. AEM (and
+      // similar responsive-iframe hosts) inject the iframe at 0×N
+      // first and grow it later — a single fitBounds at load time
+      // computes against the wrong size and looks "zoomed out". The
+      // ResizeObserver catches that growth no matter when it
+      // happens.
       map.resize();
       applyInitialView();
-      window.setTimeout(() => {
-        map.resize();
-        applyInitialView();
-      }, 600);
+      if (typeof ResizeObserver !== "undefined") {
+        let lastW = 0, lastH = 0;
+        const ro = new ResizeObserver(() => {
+          const rect = mapEl.getBoundingClientRect();
+          const w = Math.round(rect.width);
+          const h = Math.round(rect.height);
+          if (w === lastW && h === lastH) return;
+          lastW = w; lastH = h;
+          map.resize();
+          applyInitialView();
+          if (userMoved) ro.disconnect();
+        });
+        ro.observe(mapEl);
+        // Belt-and-suspenders: also disconnect after 5 s so the
+        // observer doesn't keep firing forever on a page that
+        // genuinely never gets touched.
+        window.setTimeout(() => ro.disconnect(), 5000);
+      } else {
+        // Older browser fallback: fixed-delay re-apply.
+        window.setTimeout(() => { map.resize(); applyInitialView(); }, 600);
+      }
       resolve();
     });
   });

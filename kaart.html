@@ -79,18 +79,46 @@
   <script src="assets/vendor/nouislider.min.js"></script>
   <script type="module">
     import { initInteractiveInline } from "./js/interactive-inline.js";
+
+    // URL parameter overrides — let the embedding iframe pick a
+    // specific opening view per page, without needing to redeploy
+    // kaart.html. Three shapes supported (first match wins):
+    //
+    //   ?bbox=west,south,east,north[&padding=30]
+    //       Fit-to-bounds. Adapts to container size.
+    //       e.g. kaart.html?bbox=2.4,49.4,6.5,51.6
+    //
+    //   ?lon=4.6&lat=50.6&zoom=7
+    //       Fixed centre + zoom.
+    //
+    //   (no params)
+    //       Default = Belgium bounding box.
+    const qs = new URLSearchParams(window.location.search);
+    let initialView;
+    if (qs.has("bbox")) {
+      const nums = qs.get("bbox").split(",").map(Number);
+      if (nums.length === 4 && nums.every(Number.isFinite)) {
+        initialView = {
+          bounds: [[nums[0], nums[1]], [nums[2], nums[3]]],
+          padding: Number(qs.get("padding")) || 30,
+        };
+      }
+    }
+    if (!initialView && qs.has("lon") && qs.has("lat") && qs.has("zoom")) {
+      const lon = Number(qs.get("lon"));
+      const lat = Number(qs.get("lat"));
+      const zoom = Number(qs.get("zoom"));
+      if ([lon, lat, zoom].every(Number.isFinite)) {
+        initialView = { center: [lon, lat], zoom };
+      }
+    }
+    if (!initialView) {
+      initialView = { bounds: [[2.4, 49.4], [6.5, 51.6]], padding: 30 };
+    }
+
     initInteractiveInline({
       rootElement: document.getElementById("interactive-root"),
-      // Belgium bounding box — fit-to-bounds means the view adapts
-      // to the iframe/viewport size at render time, so a narrow phone
-      // embed, a 600 px article embed, and a full-viewport opening
-      // all land on a sensible Belgium-centred view. Robust against
-      // AEM's responsive-iframe dance (container starts at 0 px tall
-      // and grows after our init runs — we re-fit then).
-      initialView: {
-        bounds: [[2.4, 49.4], [6.5, 51.6]],
-        padding: 30,
-      },
+      initialView,
     }).catch((err) => console.error(err));
   </script>
 </body>
