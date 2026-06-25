@@ -6,14 +6,31 @@ const PCT_BINS = [-75, -50, -25, -10, 0, 10, 25, 50, 75];
 const COLORS = ["#E62323", "#FF4944", "#FF7882", "#FFBFC3", "#FFF2F6", "#EEF7EE", "#C3F0C7", "#6DE19B", "#3ECF6E", "#21891F"];
 const NO_DATA_COLOR = "rgba(0,0,0,0)";
 
-// Gent, antwerpen, brussel, charleroi, luik — used to highlight in step 2. 
-const BIG_CITIES = ["BE_44021", "BE_11002", "BE_21004", "BE_62063", "BE_52011"];
-// Mechelen + Vilvoorde — highlight in step 13 (kleine steden rond Brussel).
-const MECHELEN_VILVOORDE = ["BE_12025", "BE_23088"];
-// Aalst, Ninove, Tienen, Denderleeuw — historische arbeiderssteden, step 14.
-const ARBEIDERSSTEDEN = ["BE_41002", "BE_41048", "BE_24107", "BE_41011"];
-// Aalst, Wetteren, Mechelen, Tienen — small Flemish cities (step 4).
-const FOUR_SMALLER = ["BE_41002", "BE_42025", "BE_12025", "BE_24107"];
+// Highlight units — logical groups the map can outline + label. For
+// Brussels the unit is the whole Capital Region (19 communes dissolved
+// to a single outer perimeter, in data/be-highlights.geojson); every
+// other unit is a single commune so its LAU geometry already IS the
+// outer perimeter. `center` is the label anchor (lon, lat).
+const HIGHLIGHT_UNITS = {
+  BRU: { name: "Brussel",     ids: ["BE_21001","BE_21002","BE_21003","BE_21004","BE_21005","BE_21006","BE_21007","BE_21008","BE_21009","BE_21010","BE_21011","BE_21012","BE_21013","BE_21014","BE_21015","BE_21016","BE_21017","BE_21018","BE_21019"], center: [4.3709, 50.8358], dissolved: true },
+  ANT: { name: "Antwerpen",   ids: ["BE_11002"], center: [4.404, 51.219] },
+  GEN: { name: "Gent",        ids: ["BE_44021"], center: [3.722, 51.054] },
+  LIE: { name: "Luik",        ids: ["BE_62063"], center: [5.573, 50.642] },
+  CHA: { name: "Charleroi",   ids: ["BE_52011"], center: [4.444, 50.412] },
+  AAL: { name: "Aalst",       ids: ["BE_41002"], center: [4.040, 50.937] },
+  WET: { name: "Wetteren",    ids: ["BE_42025"], center: [3.880, 51.000] },
+  MEC: { name: "Mechelen",    ids: ["BE_12025"], center: [4.480, 51.028] },
+  TIE: { name: "Tienen",      ids: ["BE_24107"], center: [4.937, 50.806] },
+  VIL: { name: "Vilvoorde",   ids: ["BE_23088"], center: [4.428, 50.928] },
+  NIN: { name: "Ninove",      ids: ["BE_41048"], center: [4.022, 50.835] },
+  DEN: { name: "Denderleeuw", ids: ["BE_41011"], center: [4.067, 50.890] },
+};
+
+// Highlight sets used by STEPS — arrays of HIGHLIGHT_UNITS keys.
+const BIG_CITIES = ["GEN", "ANT", "BRU", "LIE", "CHA"];
+const MECHELEN_VILVOORDE = ["MEC", "VIL"];
+const ARBEIDERSSTEDEN = ["AAL", "NIN", "TIE", "DEN"];
+const FOUR_SMALLER = ["AAL", "WET", "MEC", "TIE"];
 
 // Pseudo-IDs for the chart engine. When a data-ids attribute lists one
 // of these, the chart code sums populations across the listed sub-LAUs
@@ -49,13 +66,13 @@ const STEPS = [
   // 4 — Aalst / Wetteren / Mechelen / Tienen.
   { yearA: 1961, yearB: 2001, center: [4.4, 50.95], zoom: 8.5, highlight: FOUR_SMALLER, dim: ["BE_"], countryHighlight: null },
   // 5 — Brusselaars trekken naar de rand (focus Brussel + chart BRU+LLN).
-  { yearA: 1961, yearB: 2001, center: [4.4, 50.85], zoom: 9.0, highlight: [], dim: ["BE_"], countryHighlight: null },
+  { yearA: 1961, yearB: 2001, center: [4.4, 50.85], zoom: 9.6, highlight: [], dim: ["BE_"], countryHighlight: null },
   // 6 — Hetzelfde verhaal in Antwerpen.
-  { yearA: 1961, yearB: 2001, center: [4.7, 51.2], zoom: 9.5, highlight: [], dim: ["BE_"], countryHighlight: null },
+  { yearA: 1961, yearB: 2001, center: [4.5, 51.2], zoom: 9.5, highlight: [], dim: ["BE_"], countryHighlight: null },
   // 7 — Limburg is een geval apart (focus Limburg + chart Houthalen-Helchteren).
   { yearA: 1961, yearB: 2001, center: [5.4, 50.95], zoom: 9.0, highlight: [], dim: ["BE_"], countryHighlight: null },
   // 8 — De krimpende Westhoek (1961-2001).
-  { yearA: 1961, yearB: 2001, center: [3.05, 50.9], zoom: 9.2, highlight: [], dim: ["BE_"], countryHighlight: null },
+  { yearA: 1961, yearB: 2001, center: [2.85, 50.9], zoom: 9.2, highlight: [], dim: ["BE_"], countryHighlight: null },
   // 9 — Chapter: De 21e eeuw (period switches to 2001-2024).
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 6.5, highlight: [], dim: null, countryHighlight: null, chapter: true },
   // 10 — De steden groeien terug (BE focus + 5 cities).
@@ -366,8 +383,59 @@ export async function initScrollyInline(options = {}) {
     }
   }
 
-  function setHighlight(giscoIds) {
-    map.setFilter("lau-highlight", ["in", ["get", "gisco_id"], ["literal", giscoIds || []]]);
+  // Markers reused across steps — created lazily, hidden by setting
+  // their DOM element's display to "none" when not in the current
+  // highlight set.
+  const labelMarkers = new Map();  // unitKey → maplibregl.Marker
+
+  function ensureLabelMarker(unitKey) {
+    if (labelMarkers.has(unitKey)) return labelMarkers.get(unitKey);
+    const unit = HIGHLIGHT_UNITS[unitKey];
+    if (!unit) return null;
+    const el = document.createElement("div");
+    el.className = "lau-highlight-label";
+    el.textContent = unit.name;
+    const marker = new maplibregl.Marker({ element: el, anchor: "top" })
+      .setLngLat(unit.center)
+      .addTo(map);
+    labelMarkers.set(unitKey, marker);
+    return marker;
+  }
+
+  function setHighlight(unitKeys) {
+    const keys = unitKeys || [];
+
+    // Outline of every single-commune highlight uses the lau source
+    // filter; the perimeter is already the outer boundary because
+    // each unit is one commune.
+    const singleCommuneIds = [];
+    let highlightBrusselsRegion = false;
+    for (const k of keys) {
+      const unit = HIGHLIGHT_UNITS[k];
+      if (!unit) continue;
+      if (unit.dissolved) {
+        highlightBrusselsRegion = true;  // outlined via the pre-baked
+        // GeoJSON instead, so we don't push the 19 communes here
+      } else {
+        singleCommuneIds.push(...unit.ids);
+      }
+    }
+    map.setFilter("lau-highlight", ["in", ["get", "gisco_id"], ["literal", singleCommuneIds]]);
+
+    if (map.getLayer("highlight-region-line")) {
+      map.setLayoutProperty(
+        "highlight-region-line",
+        "visibility",
+        highlightBrusselsRegion ? "visible" : "none"
+      );
+    }
+
+    // Toggle marker visibility for every known unit.
+    const active = new Set(keys);
+    for (const k of Object.keys(HIGHLIGHT_UNITS)) {
+      const marker = active.has(k) ? ensureLabelMarker(k) : labelMarkers.get(k);
+      if (marker) marker.getElement().style.display = active.has(k) ? "" : "none";
+    }
   }
 
   // `prefixes` is an array of LAU code prefixes to KEEP visible (e.g.
@@ -449,6 +517,11 @@ export async function initScrollyInline(options = {}) {
       map.addLayer({ id: "lau-outline", type: "line", source: "lau", "source-layer": "lau", paint: { "line-color": "rgba(255,255,255,0.75)", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0, 6, 0.2, 7, 0.4, 8, 0.6] } }, beforeId);
       map.addLayer({ id: "lau-dim", type: "fill", source: "lau", "source-layer": "lau", filter: ["!=", ["slice", ["get", "gisco_id"], 0, 3], "ZZ_"], paint: { "fill-color": "#ffffff", "fill-opacity": 0.9 }, layout: { visibility: "none" } }, beforeId);
       map.addLayer({ id: "lau-highlight", type: "line", source: "lau", "source-layer": "lau", filter: ["in", ["get", "gisco_id"], ["literal", []]], paint: { "line-color": "#5541F0", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.2, 8, 2, 11, 2.5] } }, beforeId);
+      // Pre-baked dissolved outline for the Brussels-Capital Region
+      // (19 communes merged into a single outer perimeter). Drawn via
+      // its own source so we never see the inner commune borders.
+      map.addSource("highlight-regions", { type: "geojson", data: "data/be-highlights.geojson" });
+      map.addLayer({ id: "highlight-region-line", type: "line", source: "highlight-regions", filter: ["==", ["get", "key"], "BRU"], paint: { "line-color": "#5541F0", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.4, 8, 2.2, 11, 2.8] }, layout: { visibility: "none" } }, beforeId);
       map.addLayer({ id: "country-highlight", type: "line", source: "protomaps", "source-layer": "boundaries", filter: ["all", ["<=", ["get", "kind_detail"], 2], ["==", ["get", "brk_a3"], "ZZZ"]], paint: { "line-color": "#5541F0", "line-width": 3 }, layout: { visibility: "none" } }, beforeId);
 
       // Diagonale du vide — two dashed VRT-purple lines bounding the
