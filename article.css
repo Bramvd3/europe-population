@@ -898,6 +898,26 @@ summary {
   margin: 0;
 }
 
+/* VRT-style highlight pill anchored to a city/region on the scrolly
+   map. Same pill shape as .card-kicker but with a translucent white
+   background + soft shadow so it stays legible over both light and
+   dark patches of the choropleth. */
+.lau-highlight-label {
+  font-family: var(--font-display, "Roobert"), sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 12px 3px 12px;
+  background: rgba(255, 255, 255, 0.92);
+  border: none;
+  border-radius: 100px;
+  color: var(--colwhite);
+  background-color: var(--vio2);
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(3, 16, 55, 0.18);
+  pointer-events: none;
+  transform: translateY(6px);
+}
+
 /* ============================================================
    INTERACTIVE EMBED SECTION
    ============================================================ */

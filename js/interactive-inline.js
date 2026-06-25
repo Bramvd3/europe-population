@@ -99,6 +99,9 @@ export async function initInteractiveInline(options = {}) {
     // gebruiken om te scrollen. Voorkomt dat de pagina "vastloopt"
     // bij scrollen over de kaart in een artikel-context.
     cooperativeGestures: true,
+    pitchWithRotate: false, // Disables tilt while rotating
+    dragRotate: false,    // Disables rotating with the mouse
+    touchZoomRotate: false, // Disables two-finger rotate/pitch gestures
     locale: {
       "CooperativeGesturesHandler.WindowsHelpText": "Gebruik Ctrl + scrollen om in te zoomen",
       "CooperativeGesturesHandler.MacHelpText": "Gebruik ⌘ + scrollen om in te zoomen",
@@ -440,22 +443,6 @@ export async function initInteractiveInline(options = {}) {
       }
       if (map.getLayer("water")) map.setPaintProperty("water", "fill-color", "#dbe9f4");
       if (map.getLayer("places_country")) map.setPaintProperty("places_country", "text-color", "#5c5c5c");
-      // Push city / hamlet labels later than Protomaps' defaults. Wrap
-      // in try/catch — MapLibre 4.7 throws a ValidationError on this
-      // expression for some Protomaps theme versions; we don't want
-      // that to kill the rest of the load handler (which sets up the
-      // year-slider, search box and popup interactions).
-      const LABEL_DELAY = 4;
-      ["places_locality", "places_subplace", "places_region"].forEach((id) => {
-        if (!map.getLayer(id)) return;
-        try {
-          const existing = map.getFilter(id) ?? ["all"];
-          const stricter = [">=", ["zoom"], ["+", ["coalesce", ["get", "min_zoom"], 0], LABEL_DELAY]];
-          map.setFilter(id, ["all", existing, stricter]);
-        } catch (err) {
-          // Validation failure — leave the layer at Protomaps' defaults.
-        }
-      });
       map.addSource("lau", { type: "vector", url: "pmtiles://data/lau-scrolly.pmtiles" });
       const beforeId = borderLayerId ?? undefined;
       map.addLayer({ id: "lau-fill", type: "fill", source: "lau", "source-layer": "lau", paint: { "fill-color": buildFillExpr(yearA, yearB, mode), "fill-opacity": 0.85, "fill-outline-color": "rgba(255,255,255,0)" } }, beforeId);
