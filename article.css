@@ -250,8 +250,8 @@ a:hover {
 
 .hero-intro__lead {
   max-width: 620px;
-  font-size: clamp(18px, 2vw, 22px);
-  line-height: 1.5;
+  font-size: clamp(20px, 2vw, 25px);
+  line-height: 1.2;
   margin: 0 0 48px;
   color: rgba(255, 255, 255, 0.92);
 }
@@ -440,7 +440,7 @@ a:hover {
 .menu-box {
   display: flex;
   flex-direction: row;
-  gap: 1rem;
+  gap: 0.6rem;
   flex-wrap: wrap;
 }
 
@@ -1216,6 +1216,11 @@ summary {
    RESPONSIVE
    ============================================================ */
 @media (max-width: 720px) {
+
+  .menu-box__link {
+    paddng: 0.6rem 0.8rem;
+    font-size: 0.8rem;
+  }
   .article-title {
     font-size: 30px;
   }
