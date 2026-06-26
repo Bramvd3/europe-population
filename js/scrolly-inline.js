@@ -548,7 +548,7 @@ export async function initScrollyInline(options = {}) {
         return lines.find((l) => /country|admin[-_]?0|boundary[-_]?2/i.test(l.id))?.id ?? lines.find((l) => l.id.toLowerCase().includes("boundary"))?.id ?? null;
       })();
       if (borderLayerId) {
-        map.setPaintProperty(borderLayerId, "line-color", "#333");
+        map.setPaintProperty(borderLayerId, "line-color", "#031037");
         map.setPaintProperty(borderLayerId, "line-width", 1.2);
         map.setPaintProperty(borderLayerId, "line-dasharray", [1]);
       }
@@ -565,8 +565,8 @@ export async function initScrollyInline(options = {}) {
           map.removeLayer(id);
         }
       });
-      map.addLayer({ id: "lau-fill", type: "fill", source: "lau", "source-layer": "lau", paint: { "fill-color": buildFillExpr(currentYearA, currentYearB), "fill-opacity": 0.85, "fill-outline-color": "rgba(3,16,55,0)" } }, beforeId);
-      map.addLayer({ id: "lau-outline", type: "line", source: "lau", "source-layer": "lau", paint: { "line-color": "rgba(3,16,55,0.75)", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0, 6, 0.2, 7, 0.4, 8, 0.6] } }, beforeId);
+      map.addLayer({ id: "lau-fill", type: "fill", source: "lau", "source-layer": "lau", paint: { "fill-color": buildFillExpr(currentYearA, currentYearB), "fill-opacity": 0.85, "fill-outline-color": "rgba(255,255,255,0)" } }, beforeId);
+      map.addLayer({ id: "lau-outline", type: "line", source: "lau", "source-layer": "lau", paint: { "line-color": "rgba(255,255,255,0.75)", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0, 6, 0.2, 7, 0.4, 8, 0.6] } }, beforeId);
       map.addLayer({ id: "lau-dim", type: "fill", source: "lau", "source-layer": "lau", filter: ["!=", ["slice", ["get", "gisco_id"], 0, 3], "ZZ_"], paint: { "fill-color": "#ffffff", "fill-opacity": 0.9 }, layout: { visibility: "none" } }, beforeId);
       map.addLayer({ id: "lau-highlight", type: "line", source: "lau", "source-layer": "lau", filter: ["in", ["get", "gisco_id"], ["literal", []]], paint: { "line-color": "#5541F0", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.2, 8, 2, 11, 2.5] } }, beforeId);
       // Pre-baked dissolved outline for the Brussels-Capital Region
