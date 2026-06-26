@@ -24,9 +24,10 @@ const HIGHLIGHT_UNITS = {
   BRU: { name: "Brussel",     ids: ["BE_21001","BE_21002","BE_21003","BE_21004","BE_21005","BE_21006","BE_21007","BE_21008","BE_21009","BE_21010","BE_21011","BE_21012","BE_21013","BE_21014","BE_21015","BE_21016","BE_21017","BE_21018","BE_21019"], center: [4.3709, 50.8358], dissolved: true },
   WST: { name: "De Westhoek", ids: ["BE_38002","BE_38008","BE_32003","BE_33039","BE_32006","BE_33011","BE_32010","BE_38014","BE_32011","BE_33040","BE_32030","BE_33016","BE_38016","BE_33021","BE_38025","BE_33041","BE_33037"], center: [2.8103, 50.9539], dissolved: true },
   // Country-level — outlined via the dissolved LU communes (key "LUX"
-  // in be-highlights.geojson). `ids` not used at runtime for dissolved
-  // units, kept here for documentation.
-  LUX: { name: "Groothertogdom Luxemburg", ids: [], center: [6.0925, 49.7768], dissolved: true },
+  // in be-highlights.geojson). `noLabel` keeps the outline but skips
+  // the pill marker (the country boundary speaks for itself; the
+  // story-relevant labels are Léglise + Vaux-sur-Sûre).
+  LUX: { name: "Groothertogdom Luxemburg", ids: [], center: [6.0925, 49.7768], dissolved: true, noLabel: true },
   // Single-commune highlights (LAU outline = outer perimeter already).
   ANT:  { name: "Antwerpen",            ids: ["BE_11002"], center: [4.404, 51.219] },
   GEN:  { name: "Gent",                 ids: ["BE_44021"], center: [3.722, 51.054] },
@@ -114,9 +115,9 @@ const STEPS = [
   // 10 — De steden groeien terug (BE focus + 5 cities).
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
   // 11 — De knik in de grafiek (5 cities + 3 in-card charts).
-  { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
+  { yearA: 2001, yearB: 2024, center: [4.1, 51.10], zoom: 9, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
   // 12 — Druk op de woningmarkt (focus Brussel).
-  { yearA: 2001, yearB: 2024, center: [4.4, 50.85], zoom: 9.0, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
+  { yearA: 2001, yearB: 2024, center: [4.1, 51.10], zoom: 9.0, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
   // 13 — Kleine steden groeien mee: Mechelen + Vilvoorde highlighted.
   { yearA: 2001, yearB: 2024, center: [4.4, 50.95], zoom: 9.3, highlight: MECHELEN_VILVOORDE_BXL_ANT, dim: ["BE_"], countryHighlight: null },
   // 14 — Historische arbeiderssteden: Aalst / Ninove / Tienen / Denderleeuw.
@@ -469,11 +470,14 @@ export async function initScrollyInline(options = {}) {
     }
 
     // Toggle marker visibility for every known unit (lazy-create on
-    // first use, then keep around and just flip display).
+    // first use, then keep around and just flip display). Units flagged
+    // with `noLabel: true` get an outline but never a pill marker.
     const active = new Set(keys);
     for (const k of Object.keys(HIGHLIGHT_UNITS)) {
-      const marker = active.has(k) ? ensureLabelMarker(k) : labelMarkers.get(k);
-      if (marker) marker.getElement().style.display = active.has(k) ? "" : "none";
+      const unit = HIGHLIGHT_UNITS[k];
+      const wantShown = active.has(k) && !unit.noLabel;
+      const marker = wantShown ? ensureLabelMarker(k) : labelMarkers.get(k);
+      if (marker) marker.getElement().style.display = wantShown ? "" : "none";
     }
   }
 
