@@ -41,7 +41,7 @@ const observer = new IntersectionObserver((entries) => {
     const index = Number.parseInt(entry.target.dataset.step, 10);
     if (Number.isFinite(index)) sendStep(index);
   }
-}, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+}, { rootMargin: "0px 0px 0px 0px", threshold: 0 });
 boxes.forEach((box) => observer.observe(box));
 
 document.addEventListener("click", (event) => {
