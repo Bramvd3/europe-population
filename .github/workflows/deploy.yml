@@ -1,0 +1,28 @@
+name: Deploy via SFTP
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Download the repository code onto the GitHub runner
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Important for delta sync (only copying changed files)
+
+      # Step 2: Sync files to your SFTP server
+      - name: SFTP Deploy
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+        with:
+          server: ${{ secrets.SFTP_SERVER }}
+          username: ${{ secrets.SFTP_USERNAME }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          port: 22 # Standard port for SFTP
+          local_path: './' # Change this if you only want to upload a specific build folder (e.g., ./dist/)
+          remote_path: '/vrtnws-speeltuin-sftp/2026/europese-populatie/'  # The path on your hosting server where files should go
