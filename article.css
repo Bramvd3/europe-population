@@ -733,7 +733,7 @@ summary {
 
 .card-kicker.card-kicker--light {
   color: var(--colwhite);
-  background-color: var(--vio2);
+  background-color: var(--basevio);
   border: none;
   font-weight: 600;
 }
@@ -1216,6 +1216,10 @@ summary {
    RESPONSIVE
    ============================================================ */
 @media (max-width: 720px) {
+
+  .menu-box{
+    flex-direction: column;
+  }
 
   .menu-box__link {
     paddng: 0.6rem 0.8rem;
