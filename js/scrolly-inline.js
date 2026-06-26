@@ -62,7 +62,7 @@ const BIG_CITIES = ["GEN", "ANT", "BRU", "LIE", "CHA"];
 const BRU_RAND_CITIES = ["BRU", "OLN"];
 const ANT_RAND_CITIES = ["ANT", "LIER", "MEC"];
 const LIMBURG_MIJN = ["HAS", "GNK", "HHL"];
-const MECHELEN_VILVOORDE = ["MEC", "VIL"];
+const MECHELEN_VILVOORDE_BXL_ANT = ["MEC", "VIL", "ANT", "BRU"];
 const ARBEIDERSSTEDEN = ["AAL", "NIN", "TIE", "DEN"];
 const FOUR_SMALLER = ["AAL", "WET", "MEC", "TIE"];
 const WESTHOEK_KRIMP = ["WAR", "WST"];
@@ -96,7 +96,7 @@ const STEPS = [
   // 1 — Chapter: Terug naar België (period switches to 1961-2001).
   { yearA: 1961, yearB: 2001, center: [4.6, 50.7], zoom: 6.5, highlight: [], dim: null, countryHighlight: null, chapter: true },
   // 2 — De stadsvlucht (5 grote BE steden highlighted).
-  { yearA: 1961, yearB: 2001, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
+  { yearA: 1961, yearB: 2001, center: [4.6, 50.7], zoom: 7.5, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
   // 3 — De suburbanisatie (zoom op Gent).
   { yearA: 1961, yearB: 2001, center: [3.72, 51.05], zoom: 9.5, highlight: ["GEN"], dim: ["BE_"], countryHighlight: null },
   // 4 — Aalst / Wetteren / Mechelen / Tienen.
@@ -106,11 +106,11 @@ const STEPS = [
   // 6 — Ook stadsvlucht in Antwerpen (Antwerpen + Lier + Mechelen).
   { yearA: 1961, yearB: 2001, center: [4.5, 51.2], zoom: 9.5, highlight: ANT_RAND_CITIES, dim: ["BE_"], countryHighlight: null },
   // 7 — De Limburgse mijnstreek groeit (Hasselt, Genk, Houthalen-Helchteren).
-  { yearA: 1961, yearB: 2001, center: [5.4, 50.95], zoom: 9.0, highlight: LIMBURG_MIJN, dim: ["BE_"], countryHighlight: null },
+  { yearA: 1961, yearB: 2001, center: [5.4, 50.95], zoom: 9.3, highlight: LIMBURG_MIJN, dim: ["BE_"], countryHighlight: null },
   // 8 — De krimpende Westhoek (Waregem highlighted + Westhoek-regio dissolved).
-  { yearA: 1961, yearB: 2001, center: [2.85, 50.9], zoom: 9.2, highlight: WESTHOEK_KRIMP, dim: ["BE_"], countryHighlight: null },
+  { yearA: 1961, yearB: 2001, center: [2.85, 50.9], zoom: 9.3, highlight: WESTHOEK_KRIMP, dim: ["BE_"], countryHighlight: null },
   // 9 — Chapter: De 21e eeuw (period switches to 2001-2024).
-  { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 6.5, highlight: [], dim: null, countryHighlight: null, chapter: true },
+  { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
   // 10 — De steden groeien terug (BE focus + 5 cities).
   { yearA: 2001, yearB: 2024, center: [4.6, 50.7], zoom: 7.2, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
   // 11 — De knik in de grafiek (5 cities + 3 in-card charts).
@@ -118,7 +118,7 @@ const STEPS = [
   // 12 — Druk op de woningmarkt (focus Brussel).
   { yearA: 2001, yearB: 2024, center: [4.4, 50.85], zoom: 9.0, highlight: BIG_CITIES, dim: ["BE_"], countryHighlight: null },
   // 13 — Kleine steden groeien mee: Mechelen + Vilvoorde highlighted.
-  { yearA: 2001, yearB: 2024, center: [4.4, 50.95], zoom: 9.0, highlight: MECHELEN_VILVOORDE, dim: ["BE_"], countryHighlight: null },
+  { yearA: 2001, yearB: 2024, center: [4.4, 50.95], zoom: 9.3, highlight: MECHELEN_VILVOORDE_BXL_ANT, dim: ["BE_"], countryHighlight: null },
   // 14 — Historische arbeiderssteden: Aalst / Ninove / Tienen / Denderleeuw.
   { yearA: 2001, yearB: 2024, center: [4.4, 50.85], zoom: 8.5, highlight: ARBEIDERSSTEDEN, dim: ["BE_"], countryHighlight: null },
   // 15 — Economische aantrekking van Luxemburg (Groothertogdom outline
