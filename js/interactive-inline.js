@@ -441,13 +441,13 @@ export async function initInteractiveInline(options = {}) {
         map.setPaintProperty(borderLayerId, "line-width", 1.2);
         map.setPaintProperty(borderLayerId, "line-dasharray", [1]);
       }
-      if (map.getLayer("water")) map.setPaintProperty("water", "fill-color", "#dbe9f4");
-      if (map.getLayer("places_country")) map.setPaintProperty("places_country", "text-color", "#5c5c5c");
+      if (map.getLayer("water")) map.setPaintProperty("water", "fill-color", "#E6F5FF");
+      if (map.getLayer("places_country")) map.setPaintProperty("places_country", "text-color", "#3F4865");
       map.addSource("lau", { type: "vector", url: "pmtiles://data/lau-scrolly.pmtiles" });
       const beforeId = borderLayerId ?? undefined;
       map.addLayer({ id: "lau-fill", type: "fill", source: "lau", "source-layer": "lau", paint: { "fill-color": buildFillExpr(yearA, yearB, mode), "fill-opacity": 0.85, "fill-outline-color": "rgba(255,255,255,0)" } }, beforeId);
       map.addLayer({ id: "lau-outline", type: "line", source: "lau", "source-layer": "lau", paint: { "line-color": "rgba(255,255,255,0.75)", "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0, 6, 0.2, 7, 0.4, 8, 0.6] } }, beforeId);
-      map.addLayer({ id: "lau-hover", type: "line", source: "lau", "source-layer": "lau", paint: { "line-color": "#222", "line-width": 2, "line-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 1, 0] } }, beforeId);
+      map.addLayer({ id: "lau-hover", type: "line", source: "lau", "source-layer": "lau", paint: { "line-color": "#031037", "line-width": 2, "line-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 1, 0] } }, beforeId);
       attachInteractions();
       updateLegend();
       periodTitleEl.textContent = "Bevolkingsevolutie in Europa";
