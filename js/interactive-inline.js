@@ -437,7 +437,7 @@ export async function initInteractiveInline(options = {}) {
     map.on("load", () => {
       const borderLayerId = findCountryBorderLayer();
       if (borderLayerId) {
-        map.setPaintProperty(borderLayerId, "line-color", "#333");
+        map.setPaintProperty(borderLayerId, "line-color", "#031037");
         map.setPaintProperty(borderLayerId, "line-width", 1.2);
         map.setPaintProperty(borderLayerId, "line-dasharray", [1]);
       }
