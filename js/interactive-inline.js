@@ -7,7 +7,7 @@ const NO_DATA_COLOR = "rgba(0,0,0,0)";
 // Self-hosted Protomaps basemap. The PMTiles file lives at
 // /protomaps-basemap/global-basemap.pmtiles on the SFTP-served host.
 const PROTOMAPS_FLAVOR = "white";
-const BASEMAP_URL = "pmtiles:///protomaps-basemap/global-basemap.pmtiles";
+const BASEMAP_URL = "pmtiles:///protomaps-basemap/global-basemap-maxzoom-10.pmtiles";
 
 function formatAbsLabel(v) {
   const sign = v > 0 ? "+" : (v < 0 ? "−" : "");
