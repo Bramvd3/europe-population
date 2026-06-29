@@ -20,6 +20,30 @@ function formatPopulation(value) {
   return value.toLocaleString("nl-BE");
 }
 
+// Clean up a raw LAU name for the hover popup.
+//   "Aalst (Aalst) / Alost (Alost)"      → "Aalst"
+//   "Saint-Gilles / Sint-Gillis"  (BRU)  → "Sint-Gillis"
+//   "Bruxelles / Brussel"         (BRU)  → "Brussel"
+//   "Lier / Lierre"               (ANT)  → "Lier"
+//   "Gent"                                → "Gent"
+// Rule: strip every "(...)" run first; then if it's a Brussels-Capital
+// commune (BE_21xxx) take the part AFTER the last "/", otherwise take
+// the part BEFORE the first "/".
+function displayName(rawName, giscoId) {
+  if (!rawName) return giscoId || "";
+  const stripped = rawName.replace(/\s*\([^)]*\)/g, "").trim();
+  const slash = stripped.includes("/");
+  if (giscoId && giscoId.startsWith("BE_21") && slash) {
+    const tail = stripped.split("/").pop().trim();
+    if (tail) return tail;
+  }
+  if (slash) {
+    const head = stripped.split("/")[0].trim();
+    if (head) return head;
+  }
+  return stripped || rawName;
+}
+
 function getPopExpr(year) {
   if (year === 2024) return ["coalesce", ["get", "pop_2024"], ["get", "pop_2021"]];
   return ["get", "pop_" + year];
@@ -215,7 +239,7 @@ export async function initInteractiveInline(options = {}) {
     else return;
     const locationId = props.gisco_id;
     chartPanelEl.dataset.location = locationId;
-    const name = props.name || locationId;
+    const name = displayName(props.name, locationId);
     const [eya, pa] = effectiveYear(props, yearA, +1);
     const [eyb, pb] = effectiveYear(props, yearB, -1);
     let sentence;
