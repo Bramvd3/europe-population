@@ -322,11 +322,12 @@ export async function initScrollyInline(options = {}) {
         .style("display", "block");
       const g = svg.append("g").attr("transform", `translate(${m.left},${m.top})`);
       const x = d3.scaleLinear().domain([startYear, endYear]).range([0, iw]);
-      const minPop = d3.min(series, (d) => d.pop);
+      // Always start the y-axis at 0 so the slope reflects the actual
+      // proportional change, not an auto-zoomed exaggeration. Headroom
+      // on top (15%) so the highest point doesn't kiss the chart edge.
       const maxPop = d3.max(series, (d) => d.pop);
-      const span = Math.max(maxPop - minPop, 1);
       const y = d3.scaleLinear()
-        .domain([minPop - span * 0.4, maxPop + span * 0.15])
+        .domain([0, maxPop * 1.15])
         .range([ih, 0]);
       g.append("g")
         .attr("class", "chart-x-axis")
