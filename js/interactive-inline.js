@@ -20,24 +20,43 @@ function formatPopulation(value) {
   return value.toLocaleString("nl-BE");
 }
 
-// Clean up a raw LAU name for the hover popup.
-//   "Aalst (Aalst) / Alost (Alost)"      → "Aalst"
-//   "Saint-Gilles / Sint-Gillis"  (BRU)  → "Sint-Gillis"
-//   "Bruxelles / Brussel"         (BRU)  → "Brussel"
-//   "Lier / Lierre"               (ANT)  → "Lier"
-//   "Gent"                                → "Gent"
-// Rule: strip every "(...)" run first; then if it's a Brussels-Capital
-// commune (BE_21xxx) take the part AFTER the last "/", otherwise take
-// the part BEFORE the first "/".
+// Cleaned-up LAU names for the hover popup.
+//
+// Brussels-Capital communes are inconsistent in the source data: most
+// list French / Dutch, but BE_21007 (Vorst) lists Dutch / French. So
+// "take the part after the slash" gives Sint-Gillis for BE_21013 but
+// Forest for BE_21007. Explicit table wins over heuristics — Dutch
+// name per BE_21xxx, hardcoded once.
+const BRU_NL_NAMES = {
+  BE_21001: "Anderlecht",
+  BE_21002: "Oudergem",
+  BE_21003: "Sint-Agatha-Berchem",
+  BE_21004: "Brussel",
+  BE_21005: "Etterbeek",
+  BE_21006: "Evere",
+  BE_21007: "Vorst",
+  BE_21008: "Ganshoren",
+  BE_21009: "Elsene",
+  BE_21010: "Jette",
+  BE_21011: "Koekelberg",
+  BE_21012: "Sint-Jans-Molenbeek",
+  BE_21013: "Sint-Gillis",
+  BE_21014: "Sint-Joost-ten-Node",
+  BE_21015: "Schaarbeek",
+  BE_21016: "Ukkel",
+  BE_21017: "Watermaal-Bosvoorde",
+  BE_21018: "Sint-Lambrechts-Woluwe",
+  BE_21019: "Sint-Pieters-Woluwe",
+};
+
+// For everyone else: strip "(...)" runs, then take the part before the
+// first "/". "Aalst (Aalst) / Alost (Alost)" → "Aalst", "Lier / Lierre"
+// → "Lier", "Gent" → "Gent".
 function displayName(rawName, giscoId) {
+  if (giscoId && BRU_NL_NAMES[giscoId]) return BRU_NL_NAMES[giscoId];
   if (!rawName) return giscoId || "";
   const stripped = rawName.replace(/\s*\([^)]*\)/g, "").trim();
-  const slash = stripped.includes("/");
-  if (giscoId && giscoId.startsWith("BE_21") && slash) {
-    const tail = stripped.split("/").pop().trim();
-    if (tail) return tail;
-  }
-  if (slash) {
+  if (stripped.includes("/")) {
     const head = stripped.split("/")[0].trim();
     if (head) return head;
   }
