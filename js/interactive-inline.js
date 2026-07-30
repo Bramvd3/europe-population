@@ -146,13 +146,13 @@ export async function initInteractiveInline(options = {}) {
     cooperativeGestures: true,
     pitchWithRotate: false, // Disables tilt while rotating
     dragRotate: false,    // Disables rotating with the mouse
-    touchZoomRotate: false, // Disables two-finger rotate/pitch gestures
     locale: {
       "CooperativeGesturesHandler.WindowsHelpText": "Gebruik Ctrl + scrollen om in te zoomen",
       "CooperativeGesturesHandler.MacHelpText": "Gebruik ⌘ + scrollen om in te zoomen",
       "CooperativeGesturesHandler.MobileHelpText": "Gebruik twee vingers om de kaart te verplaatsen",
     },
   });
+  map.touchZoomRotate.disableRotation();
 
   // Track user interaction so we don't override a manual pan/zoom
   // when the late-resize re-fit fires (AEM growth case).
